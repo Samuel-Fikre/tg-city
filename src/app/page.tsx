@@ -161,8 +161,8 @@ const CELEBRATION_MILESTONES = [10000, 15000, 20000, 25000, 30000, 40000, 50000,
 
 // ─── Loading phases for search feedback ─────────────────────
 const LOADING_PHASES = [
-  { delay: 0, text: "Fetching GitHub profile..." },
-  { delay: 2000, text: "Analyzing contributions..." },
+  { delay: 0, text: "Fetching Telegram channel..." },
+  { delay: 2000, text: "Analyzing subscribers..." },
   { delay: 5000, text: "Building the city block..." },
   { delay: 9000, text: "Almost there..." },
   { delay: 13000, text: "This one's a big profile. Hang tight..." },
@@ -294,8 +294,8 @@ function SearchFeedback({
 
 const LEADERBOARD_CATEGORIES = [
   { label: "Contributors", key: "contributions" as const, tab: "contributors" },
-  { label: "Stars", key: "total_stars" as const, tab: "stars" },
-  { label: "Repos", key: "public_repos" as const, tab: "architects" },
+  { label: "Avg. Views", key: "total_stars" as const, tab: "stars" },
+  { label: "Posts", key: "public_repos" as const, tab: "architects" },
 ] as const;
 
 function MiniLeaderboard({ buildings, accent }: { buildings: CityBuilding[]; accent: string }) {
@@ -1260,7 +1260,6 @@ function HomeContent() {
     }
 
     loadCity();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadStage]);
 
   // City reload on tab return removed — navigating back from shop already
@@ -3703,9 +3702,9 @@ function HomeContent() {
               <div className="grid grid-cols-3 gap-px bg-border/30 mx-4 mb-3 border border-border/50">
                 {[
                   { label: "Rank", value: `#${selectedBuilding.rank}` },
-                  { label: "Contribs", value: selectedBuilding.contributions.toLocaleString() },
-                  { label: "Repos", value: selectedBuilding.public_repos.toLocaleString() },
-                  { label: "Stars", value: selectedBuilding.total_stars.toLocaleString() },
+                  { label: "Subscribers", value: selectedBuilding.contributions.toLocaleString() },
+                  { label: "Posts", value: selectedBuilding.public_repos.toLocaleString() },
+                  { label: "Avg. Views", value: selectedBuilding.total_stars.toLocaleString() },
                   { label: "Kudos", value: (selectedBuilding.kudos_count ?? 0).toLocaleString() },
                   { label: "Visits", value: (selectedBuilding.visit_count ?? 0).toLocaleString() },
                 ].map((s) => (
@@ -3967,12 +3966,12 @@ function HomeContent() {
                       View Profile
                     </Link>
                     <a
-                      href={`https://github.com/${selectedBuilding.login}`}
+                      href={`https://t.me/${selectedBuilding.login}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="btn-press flex-1 border-2 border-border py-2 text-center text-[10px] text-cream transition-colors hover:border-border-light"
                     >
-                      GitHub
+                      Telegram
                     </a>
                   </>
                 )}
@@ -4051,9 +4050,9 @@ function HomeContent() {
       {comparePair && (() => {
         const compareStatDefs: { label: string; key: keyof CityBuilding; invert?: boolean }[] = [
           { label: "Rank", key: "rank", invert: true },
-          { label: "Contributions", key: "contributions" },
-          { label: "Stars", key: "total_stars" },
-          { label: "Repos", key: "public_repos" },
+          { label: "Subscribers", key: "contributions" },
+          { label: "Avg. Views", key: "total_stars" },
+          { label: "Posts", key: "public_repos" },
           { label: "Kudos", key: "kudos_count" },
         ];
         let totalAWins = 0;

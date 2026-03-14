@@ -33,10 +33,10 @@ const STAGE_MESSAGES: Record<string, string> = {
 };
 
 const TIPS = [
-  "Click any building to see that dev's profile",
+  "Click any building to see that channel's profile",
   "Use Fly Mode to cruise above the skyline",
-  "Taller buildings = more contributions",
-  "Try searching for your GitHub username",
+  "Taller buildings = more subscribers",
+  "Try searching for your Telegram handle",
   "Buildings glow brighter with more recent activity",
   "You can customize your building in the shop",
   "Explore Mode shows the full city layout",
@@ -83,7 +83,7 @@ export default function LoadingScreen({
   // Trigger fade-out when stage becomes "ready"
   useEffect(() => {
     if (stage === "ready") {
-      setFading(true);
+      requestAnimationFrame(() => setFading(true));
     }
   }, [stage]);
 

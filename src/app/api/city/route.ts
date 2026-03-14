@@ -2,11 +2,14 @@ import { NextResponse } from "next/server";
 
 const TG_BACKEND_URL = process.env.TG_BACKEND_URL;
 
-if (!TG_BACKEND_URL) {
-  throw new Error("TG_BACKEND_URL environment variable is not set");
-}
-
 export async function GET(request: Request) {
+  if (!TG_BACKEND_URL) {
+    return NextResponse.json(
+      { error: "TG_BACKEND_URL environment variable is not set" },
+      { status: 500 }
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const from = Math.max(0, parseInt(searchParams.get("from") ?? "0", 10));
   const to = Math.min(
@@ -16,6 +19,7 @@ export async function GET(request: Request) {
 
   try {
     // Fetch from Telegram backend
+    console.log("Fetching from:", TG_BACKEND_URL);
     const res = await fetch(TG_BACKEND_URL!, {
       headers: {
         "Accept": "application/json",
@@ -23,8 +27,10 @@ export async function GET(request: Request) {
     });
 
     if (!res.ok) {
+      const errorText = await res.text();
+      console.error("Backend error:", res.status, errorText);
       return NextResponse.json(
-        { error: "Failed to fetch from Telegram backend" },
+        { error: "Failed to fetch from Telegram backend", status: res.status, details: errorText },
         { status: res.status }
       );
     }

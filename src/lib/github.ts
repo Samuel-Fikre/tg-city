@@ -467,7 +467,6 @@ export function generateCityLayout(devs: ChannelRecord[]): {
   // ── 2. Place blocks on a GLOBAL axis-aligned grid ──
   // Downtown spiral at center, each district spiral at an offset.
   // occupiedCells prevents any overlap.
-  const BLOCK_STEP_X = BLOCK_FOOTPRINT_X + STREET_W; // 173
   const BLOCK_STEP_Z = BLOCK_FOOTPRINT_Z + STREET_W; // 149
   const RIVER_Z_THRESHOLD = BLOCK_STEP_Z / 2;
   const RIVER_PUSH = RIVER_WIDTH + 2 * RIVER_MARGIN - STREET_W;

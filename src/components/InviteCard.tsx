@@ -76,11 +76,11 @@ export default function InviteCard({ developer, isLoggedIn, onLogin, onClose, ac
 
         {/* Stats */}
         <p className="mt-2 text-[10px] text-muted normal-case">
-          <span style={{ color: accent }}>{developer.contributions.toLocaleString()}</span> contributions
+          <span style={{ color: accent }}>{developer.contributions.toLocaleString()}</span> subscribers
           {" · "}
-          <span style={{ color: accent }}>{developer.total_stars.toLocaleString()}</span> stars
+          <span style={{ color: accent }}>{developer.total_stars.toLocaleString()}</span> avg. views
           {" · "}
-          <span style={{ color: accent }}>{developer.public_repos}</span> repos
+          <span style={{ color: accent }}>{developer.public_repos}</span> posts
         </p>
 
         {/* CTAs */}
@@ -102,7 +102,7 @@ export default function InviteCard({ developer, isLoggedIn, onLogin, onClose, ac
             onClick={handleInvite}
             className="btn-press whitespace-nowrap border-[3px] border-border px-4 py-2 text-[10px] text-cream transition-colors hover:border-border-light"
           >
-            {copied ? "Link copied!" : "Invite this dev"}
+            {copied ? "Link copied!" : "Invite this channel"}
           </button>
         </div>
       </div>
