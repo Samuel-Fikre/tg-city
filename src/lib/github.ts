@@ -1,15 +1,14 @@
 // ─── Types ───────────────────────────────────────────────────
 
-export interface DeveloperRecord {
+export interface ChannelRecord {
   id: number;
-  github_login: string;
-  github_id: number | null;
+  handle: string;
   name: string | null;
   avatar_url: string | null;
   bio: string | null;
-  contributions: number;
-  public_repos: number;
-  total_stars: number;
+  subCount: number;
+  totalPosts: number;
+  avgViews: number;
   primary_language: string | null;
   top_repos?: TopRepo[];
   rank: number | null;
@@ -22,7 +21,10 @@ export interface DeveloperRecord {
   owned_items?: string[];
   custom_color?: string | null;
   billboard_images?: string[];
-  // v2 fields (optional for backward compat)
+  // Legacy compatibility fields (mapped from Telegram data)
+  contributions?: number;  // Maps to subCount
+  public_repos?: number;     // Maps to totalPosts
+  total_stars?: number;      // Maps to avgViews
   contributions_total?: number;
   contribution_years?: number[];
   total_prs?: number;
@@ -60,11 +62,11 @@ export interface TopRepo {
 }
 
 export interface CityBuilding {
-  login: string;
+  login: string;              // Maps from ChannelRecord.handle
   rank: number;
-  contributions: number;
-  total_stars: number;
-  public_repos: number;
+  contributions: number;      // Maps from ChannelRecord.subCount
+  total_stars: number;         // Maps from ChannelRecord.avgViews
+  public_repos: number;        // Maps from ChannelRecord.totalPosts
   name: string | null;
   avatar_url: string | null;
   primary_language: string | null;
@@ -188,30 +190,32 @@ function calcHeight(
 
 // ─── V2 Detection & Formulas ────────────────────────────────
 
-function isV2Dev(dev: DeveloperRecord): boolean {
-  return (dev.contributions_total ?? 0) > 0;
+function isV2Dev(dev: ChannelRecord): boolean {
+  return (dev.contributions_total ?? 0) > 0 || (dev.subCount ?? 0) > 0;
 }
 
 function calcHeightV2(
-  dev: DeveloperRecord,
+  dev: ChannelRecord,
   maxContribV2: number,
   maxStars: number,
 ): { height: number; composite: number } {
-  const contribs = dev.contributions_total! > 0 ? dev.contributions_total! : dev.contributions;
+  // Use Telegram subCount as the primary metric (mapped to contributions)
+  const contribs = dev.subCount ?? dev.contributions ?? 0;
+
+  // Use Telegram avgViews as the secondary metric (mapped to total_stars)
+  const avgViews = dev.avgViews ?? dev.total_stars ?? 0;
 
   const cNorm = contribs / Math.max(1, Math.min(maxContribV2, 50_000));
-  const sNorm = dev.total_stars / Math.max(1, Math.min(maxStars, 200_000));
+  const sNorm = avgViews / Math.max(1, Math.min(maxStars, 200_000));
+
+  // Consistency: for Telegram, we can use posts as a consistency indicator
+  const posts = dev.totalPosts ?? dev.public_repos ?? 0;
+  const consistencyRaw = Math.min(1, posts / Math.max(1, contribs / 10));
+  const consistencyNorm = Math.min(1, consistencyRaw);
+
   const prNorm = ((dev.total_prs ?? 0) + (dev.total_reviews ?? 0)) / 5_000;
   const extNorm = (dev.repos_contributed_to ?? 0) / 100;
   const fNorm = Math.log10(Math.max(1, dev.followers ?? 0)) / Math.log10(50_000);
-
-  // Consistency: years active / account age
-  const accountAgeYears = Math.max(1,
-    (Date.now() - new Date(dev.account_created_at || dev.created_at).getTime()) / (365.25 * 24 * 60 * 60 * 1000)
-  );
-  const yearsActive = dev.contribution_years?.length || 1;
-  const consistencyRaw = (yearsActive / accountAgeYears) * Math.min(1, contribs / (accountAgeYears * 200));
-  const consistencyNorm = Math.min(1, consistencyRaw);
 
   const cScore = Math.pow(Math.min(cNorm, 3), 0.55);
   const sScore = Math.pow(Math.min(sNorm, 3), 0.45);
@@ -232,8 +236,10 @@ function calcHeightV2(
   return { height, composite };
 }
 
-function calcWidthV2(dev: DeveloperRecord): number {
-  const repoNorm = Math.min(1, dev.public_repos / 200);
+function calcWidthV2(dev: ChannelRecord): number {
+  // Use Telegram totalPosts for building width (mapped from public_repos)
+  const posts = dev.totalPosts ?? dev.public_repos ?? 0;
+  const repoNorm = Math.min(1, posts / 200);
   const langNorm = Math.min(1, (dev.language_diversity ?? 1) / 10);
   const topStarNorm = Math.min(1, (dev.top_repos?.[0]?.stars ?? 0) / 50_000);
 
@@ -242,11 +248,11 @@ function calcWidthV2(dev: DeveloperRecord): number {
     Math.pow(langNorm, 0.6) * 0.30 +
     Math.pow(topStarNorm, 0.4) * 0.20;
 
-  const jitter = (seededRandom(hashStr(dev.github_login)) - 0.5) * 4;
+  const jitter = (seededRandom(hashStr(dev.handle)) - 0.5) * 4;
   return Math.round(14 + score * 24 + jitter);
 }
 
-function calcDepthV2(dev: DeveloperRecord): number {
+function calcDepthV2(dev: ChannelRecord): number {
   const extNorm = Math.min(1, (dev.repos_contributed_to ?? 0) / 100);
   const orgNorm = Math.min(1, (dev.organizations_count ?? 0) / 10);
   const prNorm = Math.min(1, (dev.total_prs ?? 0) / 1_000);
@@ -260,22 +266,27 @@ function calcDepthV2(dev: DeveloperRecord): number {
     Math.pow(prNorm, 0.5) * 0.20 +
     Math.pow(ratioNorm, 0.5) * 0.15;
 
-  const jitter = (seededRandom(hashStr(dev.github_login) + 99) - 0.5) * 4;
+  const jitter = (seededRandom(hashStr(dev.handle) + 99) - 0.5) * 4;
   return Math.round(12 + score * 20 + jitter);
 }
 
-function calcLitPercentageV2(dev: DeveloperRecord): number {
-  const activeDaysNorm = Math.min(1, (dev.active_days_last_year ?? 0) / 300);
-  const streakNorm = Math.min(1, (dev.current_streak ?? 0) / 100);
+function calcLitPercentageV2(dev: ChannelRecord): number {
+  // Use avgViews as a proxy for engagement/lit windows
+  const avgViews = dev.avgViews ?? dev.total_stars ?? 0;
+  const subCount = dev.subCount ?? dev.contributions ?? 0;
+  const posts = dev.totalPosts ?? dev.public_repos ?? 0;
 
-  const avgPerYear = (dev.contributions_total ?? 0) / Math.max(1, dev.contribution_years?.length ?? 1);
-  const trendRaw = avgPerYear > 0 ? dev.contributions / avgPerYear : 1;
-  const trendNorm = Math.min(2, Math.max(0, trendRaw)) / 2;
+  // Engagement: views per subscriber normalized
+  const engagementRaw = subCount > 0 ? avgViews / subCount : 0;
+  const engagementNorm = Math.min(1, engagementRaw / 0.5); // 0.5 views per sub is max
+
+  // Activity: posts per subscriber (content frequency)
+  const activityRaw = subCount > 0 ? posts / subCount : 0;
+  const activityNorm = Math.min(1, activityRaw * 100); // Scale up
 
   const score =
-    activeDaysNorm * 0.60 +
-    streakNorm * 0.25 +
-    trendNorm * 0.15;
+    engagementNorm * 0.70 +
+    activityNorm * 0.30;
 
   return 0.05 + score * 0.90;
 }
@@ -305,7 +316,7 @@ export interface DistrictZone {
 const RIVER_WIDTH = 40;
 
 function precomputeComposites(
-  devs: DeveloperRecord[],
+  devs: ChannelRecord[],
   maxContrib: number,
   maxStars: number,
   maxContribV2: number,
@@ -314,8 +325,8 @@ function precomputeComposites(
   for (const dev of devs) {
     const { composite } = isV2Dev(dev)
       ? calcHeightV2(dev, maxContribV2, maxStars)
-      : calcHeight(dev.contributions, dev.total_stars, dev.public_repos, maxContrib, maxStars);
-    map.set(dev.github_login, composite);
+      : calcHeight(dev.subCount ?? dev.contributions ?? 0, dev.avgViews ?? dev.total_stars ?? 0, dev.totalPosts ?? dev.public_repos ?? 0, maxContrib, maxStars);
+    map.set(dev.handle, composite);
   }
   return map;
 }
@@ -376,7 +387,7 @@ function localBlockAxisPos(idx: number, footprint: number): number {
   return sign * (abs * footprint + abs * STREET_W);
 }
 
-export function generateCityLayout(devs: DeveloperRecord[]): {
+export function generateCityLayout(devs: ChannelRecord[]): {
   buildings: CityBuilding[];
   plazas: CityPlaza[];
   decorations: CityDecoration[];
@@ -388,9 +399,9 @@ export function generateCityLayout(devs: DeveloperRecord[]): {
   const plazas: CityPlaza[] = [];
   const decorations: CityDecoration[] = [];
   const districtZones: DistrictZone[] = [];
-  const maxContrib = devs.reduce((max, d) => Math.max(max, d.contributions), 1);
-  const maxStars = devs.reduce((max, d) => Math.max(max, d.total_stars), 1);
-  const maxContribV2 = devs.reduce((max, d) => Math.max(max, d.contributions_total ?? 0), 1);
+  const maxContrib = devs.reduce((max, d) => Math.max(max, d.subCount ?? d.contributions ?? 0), 1);
+  const maxStars = devs.reduce((max, d) => Math.max(max, d.avgViews ?? d.total_stars ?? 0), 1);
+  const maxContribV2 = devs.reduce((max, d) => Math.max(max, d.contributions_total ?? d.subCount ?? 0), 1);
 
   // ── 1. Group by district, sort within each, concat in priority order ──
   const composites = precomputeComposites(devs, maxContrib, maxStars, maxContribV2);
@@ -400,7 +411,7 @@ export function generateCityLayout(devs: DeveloperRecord[]): {
     'mobile', 'gamedev', 'vibe_coder', 'creator', 'security',
   ];
 
-  const districtGroups: Record<string, DeveloperRecord[]> = {};
+  const districtGroups: Record<string, ChannelRecord[]> = {};
   for (const dev of devs) {
     const did = dev.district ?? inferDistrict(dev.primary_language);
     if (!districtGroups[did]) districtGroups[did] = [];
@@ -421,10 +432,10 @@ export function generateCityLayout(devs: DeveloperRecord[]): {
   const DOWNTOWN_COUNT = 50;
   const LOTS_PER_BLOCK = BLOCK_SIZE * BLOCK_SIZE; // 16
   const allDevsSorted = [...devs].sort((a, b) =>
-    (composites.get(b.github_login) ?? 0) - (composites.get(a.github_login) ?? 0)
+    (composites.get(b.handle) ?? 0) - (composites.get(a.handle) ?? 0)
   );
   const downtownDevs = allDevsSorted.slice(0, DOWNTOWN_COUNT);
-  const downtownSet = new Set(downtownDevs.map(d => d.github_login));
+  const downtownSet = new Set(downtownDevs.map(d => d.handle));
 
   for (let i = 0; i < downtownDevs.length; i += LOTS_PER_BLOCK) {
     const end = Math.min(i + LOTS_PER_BLOCK, downtownDevs.length);
@@ -433,21 +444,21 @@ export function generateCityLayout(devs: DeveloperRecord[]): {
     for (let j = 0; j < shuffled.length; j++) downtownDevs[i + j] = shuffled[j];
   }
 
-  const downtownOverride = new Set(downtownDevs.map(d => d.github_login));
+  const downtownOverride = new Set(downtownDevs.map(d => d.handle));
 
   // ── Per-district dev arrays (sorted by composite, block-shuffled, minus downtown) ──
-  const districtDevArrays: { did: string; devs: DeveloperRecord[] }[] = [];
+  const districtDevArrays: { did: string; devs: ChannelRecord[] }[] = [];
   for (const did of DISTRICT_ORDER) {
     const group = districtGroups[did];
     if (!group || group.length === 0) continue;
-    const filtered = group.filter(d => !downtownSet.has(d.github_login));
+    const filtered = group.filter(d => !downtownSet.has(d.handle));
     if (filtered.length === 0) continue;
     // Full shuffle: organic mix of tall and short buildings
     districtDevArrays.push({ did, devs: seededShuffle(filtered, hashStr(did)) });
   }
   for (const [did, group] of Object.entries(districtGroups)) {
     if (!DISTRICT_ORDER.includes(did)) {
-      const filtered = group.filter(d => !downtownSet.has(d.github_login));
+      const filtered = group.filter(d => !downtownSet.has(d.handle));
       if (filtered.length === 0) continue;
       districtDevArrays.push({ did, devs: seededShuffle(filtered, hashStr(did)) });
     }
@@ -477,7 +488,7 @@ export function generateCityLayout(devs: DeveloperRecord[]): {
   // ── Helper: create buildings + decorations for one block ──
   function placeBlockContent(
     blockCX: number, blockCZ: number,
-    blockDevs: DeveloperRecord[],
+    blockDevs: ChannelRecord[],
     seedIdx: number,
   ) {
     for (let i = 0; i < blockDevs.length; i++) {
@@ -495,9 +506,9 @@ export function generateCityLayout(devs: DeveloperRecord[]): {
         d = calcDepthV2(dev);
         litPercentage = calcLitPercentageV2(dev);
       } else {
-        ({ height, composite } = calcHeight(dev.contributions, dev.total_stars, dev.public_repos, maxContrib, maxStars));
-        const seed1 = hashStr(dev.github_login);
-        const repoFactor = Math.min(1, dev.public_repos / 100);
+        ({ height, composite } = calcHeight(dev.subCount ?? dev.contributions ?? 0, dev.avgViews ?? dev.total_stars ?? 0, dev.totalPosts ?? dev.public_repos ?? 0, maxContrib, maxStars));
+        const seed1 = hashStr(dev.handle);
+        const repoFactor = Math.min(1, (dev.totalPosts ?? dev.public_repos ?? 0) / 100);
         const baseW = 14 + repoFactor * 12;
         w = Math.round(baseW + seededRandom(seed1) * 8);
         d = Math.round(12 + seededRandom(seed1 + 99) * 16);
@@ -508,16 +519,16 @@ export function generateCityLayout(devs: DeveloperRecord[]): {
       const floors = Math.max(3, Math.floor(height / floorH));
       const windowsPerFloor = Math.max(3, Math.floor(w / 5));
       const sideWindowsPerFloor = Math.max(3, Math.floor(d / 5));
-      const did = downtownOverride.has(dev.github_login)
+      const did = downtownOverride.has(dev.handle)
         ? 'downtown'
         : (dev.district ?? inferDistrict(dev.primary_language));
 
       buildings.push({
-        login: dev.github_login,
+        login: dev.handle,
         rank: dev.rank ?? globalDevIndex + i + 1,
-        contributions: (dev.contributions_total && dev.contributions_total > 0) ? dev.contributions_total : dev.contributions,
-        total_stars: dev.total_stars,
-        public_repos: dev.public_repos,
+        contributions: (dev.subCount ?? 0),
+        total_stars: dev.avgViews ?? 0,
+        public_repos: dev.totalPosts ?? 0,
         name: dev.name,
         avatar_url: dev.avatar_url,
         primary_language: dev.primary_language,
@@ -576,7 +587,7 @@ export function generateCityLayout(devs: DeveloperRecord[]): {
 
     for (let bi = 0; bi < blockDevs.length; bi++) {
       const bld = buildings[buildings.length - blockDevs.length + bi];
-      const carSeed = hashStr(blockDevs[bi].github_login) + 777;
+      const carSeed = hashStr(blockDevs[bi].handle) + 777;
       if (seededRandom(carSeed) > 0.6) {
         const side = seededRandom(carSeed + 1) > 0.5 ? 1 : -1;
         const carX = bld.position[0] + side * (bld.width / 2 + 6);
@@ -614,7 +625,7 @@ export function generateCityLayout(devs: DeveloperRecord[]): {
 
   // ── Helper: place a spiral of devs at grid origin (ogx, ogz) ──
   function placeSpiralCluster(
-    clusterDevs: DeveloperRecord[],
+    clusterDevs: ChannelRecord[],
     ogx: number, ogz: number,
     addPlaza: boolean,
   ) {
@@ -796,14 +807,14 @@ export function calcBuildingDims(
   totalStars: number,
   maxContrib: number,
   maxStars: number,
-  v2Data?: Partial<DeveloperRecord>,
+  v2Data?: Partial<ChannelRecord>,
 ): { width: number; height: number; depth: number } {
   // V2 path when expanded data is available
   if (v2Data && (v2Data.contributions_total ?? 0) > 0) {
-    const dev: DeveloperRecord = {
-      id: 0, github_login: githubLogin, github_id: null, name: null,
-      avatar_url: null, bio: null, contributions, public_repos: publicRepos,
-      total_stars: totalStars, primary_language: null, top_repos: [],
+    const dev: ChannelRecord = {
+      id: 0, handle: githubLogin, name: null,
+      avatar_url: null, bio: null, subCount: contributions, totalPosts: publicRepos,
+      avgViews: totalStars, primary_language: null, top_repos: [],
       rank: null, fetched_at: '', created_at: '', claimed: false,
       fetch_priority: 0, claimed_at: null,
       ...v2Data,
