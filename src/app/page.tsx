@@ -16,7 +16,7 @@ import {
   type CityRiver,
   type CityBridge,
   type DistrictZone,
-  type DeveloperRecord,
+  type ChannelRecord,
 } from "@/lib/github";
 import Image from "next/image";
 import Link from "next/link";
@@ -384,7 +384,7 @@ function HomeContent() {
   const failedUsernamesRef = useRef<Map<string, string>>(new Map()); // username -> error code
   const [buildings, setBuildings] = useState<CityBuilding[]>([]);
   // Keep raw dev records so we can inject new devs and regenerate layout locally
-  const rawDevsRef = useRef<DeveloperRecord[]>([]);
+  const rawDevsRef = useRef<ChannelRecord[]>([]);
   const [plazas, setPlazas] = useState<CityPlaza[]>([]);
   const [decorations, setDecorations] = useState<CityDecoration[]>([]);
   const [river, setRiver] = useState<CityRiver | null>(null);
@@ -1027,24 +1027,10 @@ function HomeContent() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let cityStats: any = null;
 
-    // Skip snapshot when busting cache — go straight to DB for fresh data
-    if (!bustCache) {
-      try {
-        const v = Math.floor(Date.now() / 300_000);
-        const snapshotUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/city-data/snapshot.json?v=${v}`;
-        const snapshotRes = await fetch(snapshotUrl);
-        if (snapshotRes.ok) {
-          const buf = await snapshotRes.arrayBuffer();
-          const ds = new DecompressionStream("gzip");
-          const stream = new Blob([buf]).stream().pipeThrough(ds);
-          const snapshot = await new Response(stream).json();
-          allDevs = snapshot.developers;
-          cityStats = snapshot.stats;
-        }
-      } catch { /* fall through to chunked */ }
-    }
+    // Skip snapshot - fetch directly from API
+    // (Removed Supabase snapshot fetch for TG City)
 
-    // Fetch from API (primary when busting cache, fallback otherwise)
+    // Fetch from API
     if (allDevs.length === 0) {
       const cbParam = bustCache ? `&_t=${Date.now()}` : "";
       const CHUNK = 1000;
@@ -1164,20 +1150,9 @@ function HomeContent() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let cityStats: any = null;
 
-        // Try pre-computed snapshot first (single file from Supabase CDN)
-        try {
-          const v = Math.floor(Date.now() / 300_000); // changes every 5 min, aligned with cron
-          const snapshotUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/city-data/snapshot.json?v=${v}`;
-          const snapshotRes = await fetch(snapshotUrl);
-          if (snapshotRes.ok) {
-            const buf = await snapshotRes.arrayBuffer();
-            const ds = new DecompressionStream("gzip");
-            const stream = new Blob([buf]).stream().pipeThrough(ds);
-            const snapshot = await new Response(stream).json();
-            allDevs = snapshot.developers;
-            cityStats = snapshot.stats;
-          }
-        } catch { /* fall through to chunked */ }
+        // Try pre-computed snapshot first (single file from Supabase CDN) - SKIPPED for TG City
+        // We now fetch directly from /api/city which proxies to Telegram backend
+        /* Removed snapshot fetch - now using live API */
 
         // Fallback to chunked API
         if (allDevs.length === 0) {
@@ -1314,6 +1289,7 @@ function HomeContent() {
     timers.push(setTimeout(() => setIntroConfetti(true), INTRO_TEXT_SCHEDULE[3] + 500));
 
     return () => timers.forEach(clearTimeout);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [introMode]);
 
 
@@ -1359,7 +1335,7 @@ function HomeContent() {
           if (devData.exists === false) return;
 
           // Dedup: another effect may have already injected this dev
-          if (rawDevsRef.current.some((d: DeveloperRecord) => d.github_login.toLowerCase() === userParam.toLowerCase())) return;
+          if (rawDevsRef.current.some((d: ChannelRecord) => d.handle.toLowerCase() === userParam.toLowerCase())) return;
 
           const newDev = {
             ...devData,
@@ -1431,7 +1407,7 @@ function HomeContent() {
         if (devData.exists === false) return;
 
         // Dedup: another effect or search may have already injected this dev
-        if (rawDevsRef.current.some((d: DeveloperRecord) => d.github_login.toLowerCase() === authLogin)) return;
+        if (rawDevsRef.current.some((d: ChannelRecord) => d.handle.toLowerCase() === authLogin)) return;
 
         const newDev = {
           ...devData,
@@ -1607,11 +1583,10 @@ function HomeContent() {
 
       // Merge the refreshed dev back into the live city so searches update stats immediately
       let updatedBuildings: CityBuilding[] | null = null;
-      const refreshedLogin = (devData.github_login ?? trimmed).toLowerCase();
+      const refreshedLogin = (devData.handle ?? trimmed).toLowerCase();
       const existingDev = rawDevsRef.current.find(
-        (d) => d.github_login?.toLowerCase() === refreshedLogin
+        (d) => d.handle?.toLowerCase() === refreshedLogin
       );
-      const eAny = existingDev as any;
       const syncedDev = {
         ...(existingDev ?? {}),
         ...devData,
@@ -1631,7 +1606,7 @@ function HomeContent() {
       };
       rawDevsRef.current = existedBefore
         ? rawDevsRef.current.map((d) =>
-          d.github_login?.toLowerCase() === refreshedLogin ? syncedDev : d
+          d.handle?.toLowerCase() === refreshedLogin ? syncedDev : d
         )
         : [...rawDevsRef.current, syncedDev];
 
@@ -1646,7 +1621,7 @@ function HomeContent() {
       updatedBuildings = layout.buildings;
 
       // Focus camera on the searched building
-      setFocusedBuilding(devData.github_login);
+      setFocusedBuilding(devData.handle);
 
       // A8: Ghost preview — if user searched for themselves, show temporary effect
       if (
@@ -1655,7 +1630,7 @@ function HomeContent() {
         !ghostPreviewShownRef.current
       ) {
         ghostPreviewShownRef.current = true;
-        setGhostPreviewLogin(devData.github_login);
+        setGhostPreviewLogin(devData.handle);
         setTimeout(() => setGhostPreviewLogin(null), 4000);
       }
 
@@ -1681,8 +1656,8 @@ function HomeContent() {
       } else if (!existedBefore) {
         // New developer: show the share modal
         setShareData({
-          login: devData.github_login,
-          contributions: devData.contributions,
+          login: devData.handle,
+          contributions: devData.subCount,
           rank: devData.rank,
           avatar_url: devData.avatar_url,
         });
@@ -1699,7 +1674,6 @@ function HomeContent() {
     } finally {
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username, buildings, authLogin, compareBuilding, comparePair, stats]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -4117,8 +4091,8 @@ function HomeContent() {
                 {/* Drag handle on mobile - swipe down to close */}
                 <div
                   className="flex justify-center py-2 sm:hidden"
-                  onTouchStart={(e) => { (e.currentTarget as any)._touchY = e.touches[0].clientY; }}
-                  onTouchEnd={(e) => { const start = (e.currentTarget as any)._touchY; if (start != null && e.changedTouches[0].clientY - start > 50) closeCompare(); }}
+                  onTouchStart={(e) => { (e.currentTarget as HTMLElement & { _touchY?: number })._touchY = e.touches[0].clientY; }}
+                  onTouchEnd={(e) => { const start = (e.currentTarget as HTMLElement & { _touchY?: number })._touchY; if (start != null && e.changedTouches[0].clientY - start > 50) closeCompare(); }}
                 >
                   <div className="h-1 w-10 rounded-full bg-border" />
                 </div>
