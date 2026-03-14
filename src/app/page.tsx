@@ -173,8 +173,8 @@ const PERMANENT_ERROR_CODES = new Set(["not-found", "org", "no-activity"]);
 
 const ERROR_MESSAGES: Record<string, { primary: (u: string) => string; secondary: string; hasRetry?: boolean; hasLink?: boolean }> = {
   "not-found": {
-    primary: (u) => `"@${u}" doesn't exist on GitHub`,
-    secondary: "Check the spelling — could be a typo. GitHub usernames are case-insensitive.",
+    primary: (u) => `"@${u}" not found in TG City database yet!`,
+    secondary: "Check the spelling — could be a typo. Telegram handles are case-insensitive.",
   },
   "org": {
     primary: (u) => `"@${u}" is an organization, not a person`,
@@ -1524,6 +1524,24 @@ function HomeContent() {
     if (cachedError) {
       setFeedback({ type: "error", code: cachedError as NonNullable<typeof feedback>["code"], username: trimmed });
       return;
+    }
+
+    // LOCAL FIRST: Check if channel already exists in the loaded city
+    const localDev = rawDevsRef.current.find(
+      (d) => d.handle?.toLowerCase() === trimmed
+    );
+    if (localDev) {
+      // Find the building and focus on it
+      const localBuilding = buildings.find(
+        (b) => b.login.toLowerCase() === trimmed
+      );
+      if (localBuilding) {
+        setFocusedBuilding(localBuilding.login);
+        setSelectedBuilding(localBuilding);
+        setExploreMode(true);
+        setUsername("");
+        return;
+      }
     }
 
     // Snapshot compare state before async work — ESC may clear it mid-flight
@@ -3103,7 +3121,7 @@ function HomeContent() {
                     setUsername(e.target.value);
                     if (feedback?.type === "error") setFeedback(null);
                   }}
-                  placeholder={session ? "search any GitHub username" : "type your GitHub username"}
+                  placeholder={session ? "search any Telegram handle" : "type your Telegram handle"}
                   className="min-w-0 flex-1 border-[3px] border-border bg-bg-raised px-3 py-2 text-base sm:text-xs text-cream outline-none transition-colors placeholder:text-dim sm:px-4 sm:py-2.5"
                   style={{ borderColor: undefined }}
                   onFocus={(e) => (e.currentTarget.style.borderColor = theme.accent)}
@@ -4022,7 +4040,7 @@ function HomeContent() {
                   setUsername(e.target.value);
                   if (feedback?.type === "error") setFeedback(null);
                 }}
-                placeholder="search username to compare"
+                placeholder="search handle to compare"
                 className="min-w-0 flex-1 border-2 border-border bg-bg px-2.5 py-1.5 text-base sm:text-[10px] text-cream outline-none transition-colors placeholder:text-dim"
                 onFocus={(e) => (e.currentTarget.style.borderColor = theme.accent)}
                 onBlur={(e) => (e.currentTarget.style.borderColor = "")}
