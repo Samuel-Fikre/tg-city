@@ -5045,14 +5045,21 @@ function HomeContent() {
       <AddChannelModal
         isOpen={addChannelOpen}
         onClose={() => setAddChannelOpen(false)}
-        onSuccess={(handle) => {
+        onSuccess={(handle, category) => {
           reloadCity(true);
           // Fly to the new building after city reloads
           setTimeout(() => {
             const building = buildings.find((b) => b.login.toLowerCase() === handle.toLowerCase());
             if (building) {
-              setFocusedBuilding(building.login);
-              setSelectedBuilding(building);
+              // Force the building to the correct district immediately
+              const updatedBuilding = { ...building, district: category, district_chosen: true };
+              setBuildings((prev) =>
+                prev.map((b) =>
+                  b.login.toLowerCase() === handle.toLowerCase() ? updatedBuilding : b
+                )
+              );
+              setFocusedBuilding(updatedBuilding.login);
+              setSelectedBuilding(updatedBuilding);
               setExploreMode(true);
             }
           }, 1500); // Wait for city to reload

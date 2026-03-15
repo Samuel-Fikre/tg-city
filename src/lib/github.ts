@@ -17,7 +17,8 @@ export interface ChannelRecord {
   claimed: boolean;
   fetch_priority: number;
   claimed_at: string | null;
-  district?: string | null;
+// Category field for Telegram channels - maps to district
+  category?: string | null;
   owned_items?: string[];
   custom_color?: string | null;
   billboard_images?: string[];
@@ -87,6 +88,8 @@ export interface CityBuilding {
   rabbit_completed: boolean;
   xp_total: number;
   xp_level: number;
+  // Category maps to district for Telegram channels
+  category?: string;
   district?: string;
   district_chosen?: boolean;
   position: [number, number, number];
@@ -335,50 +338,34 @@ function precomputeComposites(
 
 export const DISTRICT_NAMES: Record<string, string> = {
   downtown: 'Downtown',
-  frontend: 'Frontend', backend: 'Backend', fullstack: 'Full Stack',
-  mobile: 'Mobile', data_ai: 'Data & AI', devops: 'DevOps & Cloud',
-  security: 'Security', gamedev: 'GameDev', vibe_coder: 'Vibe Coder',
-  creator: 'Creator',
+  news: 'News & Media',
+  tech: 'Technology',
+  entertainment: 'Entertainment',
+  education: 'Education',
+  finance: 'Finance & Business',
+  lifestyle: 'Lifestyle',
 };
 
 export const DISTRICT_COLORS: Record<string, string> = {
   downtown: '#fbbf24',
-  frontend: '#3b82f6', backend: '#ef4444', fullstack: '#a855f7',
-  mobile: '#22c55e', data_ai: '#06b6d4', devops: '#f97316',
-  security: '#dc2626', gamedev: '#ec4899', vibe_coder: '#8b5cf6',
-  creator: '#eab308',
+  news: '#ef4444',
+  tech: '#3b82f6',
+  entertainment: '#ec4899',
+  education: '#22c55e',
+  finance: '#10b981',
+  lifestyle: '#8b5cf6',
 };
 
 export const DISTRICT_DESCRIPTIONS: Record<string, string> = {
-  downtown: 'The elite core. Top 50 devs by global rank.',
-  frontend: 'Pixels, components, and beautiful interfaces.',
-  backend: 'APIs, systems, and server-side logic.',
-  fullstack: 'Jack of all trades. Ship everything.',
-  mobile: 'Native apps for iOS and Android.',
-  data_ai: 'Data science, ML, and AI.',
-  devops: 'Infrastructure, CI/CD, and cloud.',
-  security: 'Hacking, defense, and cryptography.',
-  gamedev: 'Game engines, physics, and fun.',
-  vibe_coder: 'Aesthetic code. Vibes over velocity.',
-  creator: 'Open-source tools and content.',
+  downtown: 'The elite core. Top 50 channels by global rank.',
+  news: 'Real-time updates, journalism, and breaking stories.',
+  tech: 'Innovation, software, and digital transformation.',
+  entertainment: 'Movies, music, memes, and viral content.',
+  education: 'Learning, courses, tutorials, and knowledge.',
+  finance: 'Markets, crypto, business, and investing.',
+  lifestyle: 'Health, travel, fashion, and daily life.',
 };
 
-const LANGUAGE_TO_DISTRICT: Record<string, string> = {
-  TypeScript: 'frontend', JavaScript: 'frontend', CSS: 'frontend',
-  HTML: 'frontend', SCSS: 'frontend', Vue: 'frontend', Svelte: 'frontend',
-  Java: 'backend', Go: 'backend', Rust: 'backend', 'C#': 'backend',
-  PHP: 'backend', Ruby: 'backend', Elixir: 'backend', C: 'backend',
-  'C++': 'backend', Assembly: 'backend', Verilog: 'backend', VHDL: 'backend',
-  Python: 'data_ai', 'Jupyter Notebook': 'data_ai', R: 'data_ai', Julia: 'data_ai',
-  Swift: 'mobile', Kotlin: 'mobile', Dart: 'mobile', 'Objective-C': 'mobile',
-  HCL: 'devops', Shell: 'devops', Dockerfile: 'devops', Nix: 'devops',
-  GDScript: 'gamedev', Lua: 'gamedev',
-};
-
-export function inferDistrict(lang: string | null): string {
-  if (!lang) return 'fullstack';
-  return LANGUAGE_TO_DISTRICT[lang] ?? 'fullstack';
-}
 
 function localBlockAxisPos(idx: number, footprint: number): number {
   if (idx === 0) return 0;
@@ -407,13 +394,12 @@ export function generateCityLayout(devs: ChannelRecord[]): {
   const composites = precomputeComposites(devs, maxContrib, maxStars, maxContribV2);
 
   const DISTRICT_ORDER = [
-    'backend', 'frontend', 'fullstack', 'data_ai', 'devops',
-    'mobile', 'gamedev', 'vibe_coder', 'creator', 'security',
+    'news', 'tech', 'entertainment', 'education', 'finance', 'lifestyle',
   ];
 
   const districtGroups: Record<string, ChannelRecord[]> = {};
   for (const dev of devs) {
-    const did = dev.district ?? inferDistrict(dev.primary_language);
+    const did = dev.category ?? 'news';
     if (!districtGroups[did]) districtGroups[did] = [];
     districtGroups[did].push(dev);
   }
@@ -520,7 +506,7 @@ export function generateCityLayout(devs: ChannelRecord[]): {
       const sideWindowsPerFloor = Math.max(3, Math.floor(d / 5));
       const did = downtownOverride.has(dev.handle)
         ? 'downtown'
-        : (dev.district ?? inferDistrict(dev.primary_language));
+        : (dev.category ?? 'news');
 
       buildings.push({
         login: dev.handle,

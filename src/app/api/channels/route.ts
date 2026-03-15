@@ -25,10 +25,14 @@ export async function POST(request: Request) {
 
     const cleanedHandle = handle.toLowerCase().replace(/^@/, "");
     
-    console.log("Adding channel:", cleanedHandle);
+    // Get category from query params
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get("category") || "news";
     
-    // Backend expects POST /api/v1/channels/:handle (handle in URL, not body)
-    const res = await fetch(`${TG_BACKEND_URL}/${encodeURIComponent(cleanedHandle)}`, {
+    console.log("Adding channel:", cleanedHandle, "category:", category);
+    
+    // Backend expects POST /api/v1/channels/:handle?category=:category
+    const res = await fetch(`${TG_BACKEND_URL}/${encodeURIComponent(cleanedHandle)}?category=${encodeURIComponent(category)}`, {
       method: "POST",
       headers: { 
         "Accept": "application/json"

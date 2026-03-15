@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
+import { DISTRICT_NAMES } from "@/lib/github";
 
 interface AddChannelModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: (handle: string) => void;
+  onSuccess?: (handle: string, category: string) => void;
   accentColor: string;
 }
 
@@ -21,17 +22,17 @@ const LOADING_PHASES = [
 
 export function AddChannelModal({ isOpen, onClose, onSuccess, accentColor }: AddChannelModalProps) {
   const [handle, setHandle] = useState("");
+  const [category, setCategory] = useState("news");
   const [state, setState] = useState<ModalState>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [phaseIndex, setPhaseIndex] = useState(0);
-  const [addedHandle, setAddedHandle] = useState<string>("");
 
   const reset = useCallback(() => {
     setHandle("");
+    setCategory("news");
     setState("idle");
     setErrorMsg("");
     setPhaseIndex(0);
-    setAddedHandle("");
   }, []);
 
   const handleClose = useCallback(() => {
@@ -62,7 +63,7 @@ export function AddChannelModal({ isOpen, onClose, onSuccess, accentColor }: Add
     setErrorMsg("");
 
     try {
-      const res = await fetch("/api/channels", {
+      const res = await fetch(`/api/channels?category=${encodeURIComponent(category)}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ handle: cleanedHandle }),
@@ -71,9 +72,8 @@ export function AddChannelModal({ isOpen, onClose, onSuccess, accentColor }: Add
       if (res.ok) {
         const data = await res.json();
         const returnedHandle = data.handle || cleanedHandle;
-        setAddedHandle(returnedHandle);
         setState("success");
-        onSuccess?.(returnedHandle);
+        onSuccess?.(returnedHandle, category);
         // Auto-close after 2 seconds on success
         setTimeout(() => {
           handleClose();
@@ -87,7 +87,7 @@ export function AddChannelModal({ isOpen, onClose, onSuccess, accentColor }: Add
       setErrorMsg("Network error. Please check your connection and try again.");
       setState("error");
     }
-  }, [handle, onSuccess, handleClose]);
+  }, [handle, category, onSuccess, handleClose]);
 
   if (!isOpen) return null;
 
@@ -132,6 +132,24 @@ export function AddChannelModal({ isOpen, onClose, onSuccess, accentColor }: Add
                 onBlur={(e) => (e.currentTarget.style.borderColor = "")}
                 autoFocus
               />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-[11px] text-muted uppercase">
+                Category
+              </label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full border-2 border-border bg-bg px-3 py-2.5 text-sm text-cream outline-none transition-colors focus:border-border-light"
+                onFocus={(e) => (e.currentTarget.style.borderColor = accentColor)}
+                onBlur={(e) => (e.currentTarget.style.borderColor = "")}
+              >
+                {Object.entries(DISTRICT_NAMES).filter(([key]) => key !== 'downtown').map(([key, name]) => (
+                  <option key={key} value={key} className="bg-bg text-cream">
+                    {name}
+                  </option>
+                ))}
+              </select>
             </div>
             
             <button
