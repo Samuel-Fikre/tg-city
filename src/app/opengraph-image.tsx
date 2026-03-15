@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-export const alt = "Git City - Your GitHub as a 3D City";
+export const alt = "TG City - Your GitHub as a 3D City";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

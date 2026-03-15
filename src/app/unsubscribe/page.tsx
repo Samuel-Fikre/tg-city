@@ -47,7 +47,7 @@ export default async function UnsubscribePage({
             marginTop: 0,
           }}
         >
-          GIT CITY
+          TG City
         </h1>
 
         <div
@@ -63,7 +63,7 @@ export default async function UnsubscribePage({
             <p style={{ fontSize: 18, color: "#ff6b6b" }}>Invalid or expired link</p>
             <p style={{ color: "#666", fontSize: 14 }}>
               This unsubscribe link may have expired or is invalid.
-              You can manage your notifications from your Git City settings.
+              You can manage your notifications from your TG City settings.
             </p>
           </>
         ) : success ? (
@@ -76,7 +76,7 @@ export default async function UnsubscribePage({
               .
             </p>
             <p style={{ color: "#666", fontSize: 14 }}>
-              You can re-enable notifications anytime from your Git City settings.
+              You can re-enable notifications anytime from your TG City settings.
             </p>
           </>
         ) : (
@@ -97,7 +97,7 @@ export default async function UnsubscribePage({
           href="https://thegitcity.com"
           style={{ color: "#c8e64a", fontSize: 14, textDecoration: "underline" }}
         >
-          Back to Git City
+          Back to TG City
         </a>
       </div>
     </div>

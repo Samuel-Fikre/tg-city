@@ -94,6 +94,13 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap"
           rel="stylesheet"
         />
+        {process.env.NODE_ENV === "development" && (
+          <Script
+            src="//unpkg.com/react-grab/dist/index.global.js"
+            crossOrigin="anonymous"
+            strategy="beforeInteractive"
+          />
+        )}
       </head>
       <body className="bg-bg font-pixel text-warm" suppressHydrationWarning>
         {children}

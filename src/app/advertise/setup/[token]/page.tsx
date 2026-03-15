@@ -6,7 +6,7 @@ import { SetupContent } from "./SetupContent";
 const ACCENT = "#c8e64a";
 
 export const metadata: Metadata = {
-  title: "Set Up Your Ad - Git City",
+  title: "Set Up Your Ad - TG City",
   robots: { index: false, follow: false },
 };
 

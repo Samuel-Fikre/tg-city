@@ -6,8 +6,8 @@ import { getSupabaseAdmin } from "@/lib/supabase";
 import SignInButton from "./sign-in-button";
 
 export const metadata: Metadata = {
-  title: "Shop - Git City",
-  description: "Customize your building in Git City with effects, structures and more",
+  title: "Shop - TG City",
+  description: "Customize your building in TG City with effects, structures and more",
 };
 
 const ACCENT = "#c8e64a";
@@ -53,7 +53,7 @@ export default async function ShopLanding() {
 
         <div className="border-[3px] border-border bg-bg-raised p-6 sm:p-10">
           <h1 className="text-center text-xl text-cream sm:text-2xl">
-            Git City <span style={{ color: ACCENT }}>Shop</span>
+            TG City <span style={{ color: ACCENT }}>Shop</span>
           </h1>
 
           <p className="mt-4 text-center text-[10px] leading-relaxed text-muted normal-case">

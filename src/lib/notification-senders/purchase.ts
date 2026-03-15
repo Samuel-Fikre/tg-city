@@ -23,7 +23,7 @@ export function sendPurchaseNotification(
     html: `
       <p style="margin:0 0 4px; font-size:12px; font-weight:bold; color:#5a8a00; letter-spacing:1px; text-transform:uppercase;">Purchase confirmed</p>
       <h1 style="margin:0 0 8px; font-size:24px; font-weight:bold; color:#111111; font-family:Helvetica,Arial,sans-serif;">${itemName}</h1>
-      <p style="margin:0 0 28px; font-size:15px; color:#555555; line-height:1.6;">Your item is now available and equipped on your building in Git City.</p>
+      <p style="margin:0 0 28px; font-size:15px; color:#555555; line-height:1.6;">Your item is now available and equipped on your building in TG City.</p>
       <hr style="border:none; border-top:1px solid #eeeeee; margin:0 0 28px;" />
       ${buildButton("View Your Building", `${BASE_URL}/?user=${login}`)}
     `,

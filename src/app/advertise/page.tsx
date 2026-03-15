@@ -7,14 +7,14 @@ import { AdPurchaseForm } from "./AdPurchaseForm";
 const ACCENT = "#c8e64a";
 
 export const metadata: Metadata = {
-  title: "Advertise on Git City",
+  title: "Advertise on TG City",
   description:
     "Reach 9,000+ GitHub developers. Planes, blimps, and billboards in a 3D city. 1%+ CTR (2x industry avg). From $29/mo.",
   openGraph: {
-    title: "Advertise on Git City",
+    title: "Advertise on TG City",
     description:
       "Reach 9,000+ GitHub developers. Planes, blimps, and billboards in a 3D city. 1%+ CTR (2x industry avg). From $29/mo.",
-    siteName: "Git City",
+    siteName: "TG City",
     type: "website",
     locale: "en_US",
   },
@@ -164,17 +164,17 @@ export default async function AdvertisePage() {
         {ctr > 0.5 && (
           <div className="mt-8 border-[3px] border-border p-5 sm:p-6">
             <p className="text-base text-cream">
-              Git City vs traditional ads
+              TG City vs traditional ads
             </p>
             <p className="mt-1 text-xs text-muted normal-case">
               Click-through rate comparison (30-day average)
             </p>
 
             <div className="mt-5 space-y-3">
-              {/* Git City bar */}
+              {/* TG City bar */}
               <div className="flex items-center gap-3">
                 <span className="w-28 shrink-0 text-xs text-cream normal-case sm:w-32">
-                  Git City
+                  TG City
                 </span>
                 <div className="relative h-6 flex-1 overflow-hidden rounded-sm">
                   <div

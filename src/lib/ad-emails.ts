@@ -1,6 +1,6 @@
 import { getResend } from "./resend";
 
-const FROM = "Git City <noreply@thegitcity.com>";
+const FROM = "TG City <noreply@thegitcity.com>";
 
 export async function sendAdExpiringEmail(
   email: string,
@@ -12,7 +12,7 @@ export async function sendAdExpiringEmail(
   await resend.emails.send({
     from: FROM,
     to: email,
-    subject: `Your Git City ad expires in ${daysLeft} day${daysLeft === 1 ? "" : "s"}`,
+    subject: `Your TG City ad expires in ${daysLeft} day${daysLeft === 1 ? "" : "s"}`,
     html: `
       <div style="font-family: 'Silkscreen', monospace; max-width: 480px; margin: 0 auto; padding: 24px; background: #0a0a0e; color: #f0f0f0;">
         <h2 style="color: #c8e64a; margin-top: 0;">Heads up!</h2>
@@ -21,7 +21,7 @@ export async function sendAdExpiringEmail(
         <p><a href="${escapeHtml(trackingUrl)}" style="color: #c8e64a;">View Dashboard</a></p>
         <p>Want to keep running? <a href="https://thegitcity.com/advertise" style="color: #c8e64a;">Renew your ad</a></p>
         <hr style="border-color: #1c1c20; margin: 20px 0;" />
-        <p style="font-size: 12px; color: #3a3a44;">Git City - thegitcity.com</p>
+        <p style="font-size: 12px; color: #3a3a44;">TG City - thegitcity.com</p>
       </div>
     `,
   });
@@ -37,7 +37,7 @@ export async function sendAdExpiredEmail(
   await resend.emails.send({
     from: FROM,
     to: email,
-    subject: `Your Git City ad "${escapeHtml(adBrand)}" has ended`,
+    subject: `Your TG City ad "${escapeHtml(adBrand)}" has ended`,
     html: `
       <div style="font-family: 'Silkscreen', monospace; max-width: 480px; margin: 0 auto; padding: 24px; background: #0a0a0e; color: #f0f0f0;">
         <h2 style="color: #c8e64a; margin-top: 0;">Campaign complete</h2>
@@ -55,7 +55,7 @@ export async function sendAdExpiredEmail(
         <p>Ready for another run?</p>
         <p><a href="${escapeHtml(advertiseUrl)}" style="color: #c8e64a;">Buy a new ad</a></p>
         <hr style="border-color: #1c1c20; margin: 20px 0;" />
-        <p style="font-size: 12px; color: #3a3a44;">Git City - thegitcity.com</p>
+        <p style="font-size: 12px; color: #3a3a44;">TG City - thegitcity.com</p>
       </div>
     `,
   });

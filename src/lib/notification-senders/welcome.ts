@@ -11,12 +11,12 @@ export function sendWelcomeNotification(devId: number, login: string, rank?: num
     category: "transactional",
     developerId: devId,
     dedupKey: `welcome:${devId}`,
-    title: `Welcome to Git City, @${login}!`,
-    body: `Your building is live in Git City. ${rankText} Check in daily to grow your streak and unlock items.`,
+    title: `Welcome to TG City, @${login}!`,
+    body: `Your building is live in TG City. ${rankText} Check in daily to grow your streak and unlock items.`,
     html: `
       <p style="margin:0 0 4px; font-size:12px; font-weight:bold; color:#5a8a00; letter-spacing:1px; text-transform:uppercase;">Welcome</p>
       <h1 style="margin:0 0 8px; font-size:24px; font-weight:bold; color:#111111; font-family:Helvetica,Arial,sans-serif;">Your building is live${rankText ? ` &mdash; #${rank!.toLocaleString()}` : ""}!</h1>
-      <p style="margin:0 0 20px; font-size:15px; color:#555555; line-height:1.6;">Git City is a living city built from GitHub contributions. Here's how to get started:</p>
+      <p style="margin:0 0 20px; font-size:15px; color:#555555; line-height:1.6;">TG City is a living city built from GitHub contributions. Here's how to get started:</p>
       <ul style="margin:0 0 28px; padding-left:20px; font-size:15px; color:#555555; line-height:1.8;">
         <li>Check in daily to build your streak</li>
         <li>Customize your building in the shop</li>

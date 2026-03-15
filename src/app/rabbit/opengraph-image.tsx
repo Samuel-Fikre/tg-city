@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { getSupabaseAdmin } from "@/lib/supabase";
 
-export const alt = "The Other Side - Git City";
+export const alt = "The Other Side - TG City";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

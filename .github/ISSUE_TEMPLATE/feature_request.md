@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Suggest an idea for Git City
+about: Suggest an idea for TG City
 title: "[Feature] "
 labels: enhancement
 assignees: ""

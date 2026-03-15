@@ -27,12 +27,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       .single(),
   ]);
 
-  const title = `@${userA} vs @${userB} - Git City`;
+  const title = `@${userA} vs @${userB} - TG City`;
 
   if (!devA || !devB) {
     return {
       title,
-      description: `Compare ${userA} and ${userB} in Git City`,
+      description: `Compare ${userA} and ${userB} in TG City`,
     };
   }
 

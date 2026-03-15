@@ -126,7 +126,7 @@ function SupportContent() {
               <span style={{ color: ACCENT }}>03.</span> Star on GitHub
             </p>
             <p className="mt-2 text-xs text-muted normal-case">
-              A star helps more developers discover Git City. Takes one click.
+              A star helps more developers discover TG City. Takes one click.
             </p>
             <a
               href="https://github.com/srizzon/git-city"

@@ -105,12 +105,12 @@ export async function GET(request: NextRequest) {
           category: "digest",
           developerId: dev.id,
           dedupKey: `monthly_digest:${dev.id}:${yearMonth}`,
-          title: `Your ${monthName} in Git City`,
+          title: `Your ${monthName} in TG City`,
           body: `${monthName} recap: ${dev.contributions.toLocaleString()} total contributions, rank #${dev.rank ?? "?"}.`,
           html: `
-            <p style="color: #c8e64a; font-size: 16px;">Your ${monthName} in Git City</p>
+            <p style="color: #c8e64a; font-size: 16px;">Your ${monthName} in TG City</p>
             ${buildStatsTable(stats)}
-            ${buildButton("Visit Git City", `${BASE_URL}/?user=${dev.github_login}`)}
+            ${buildButton("Visit TG City", `${BASE_URL}/?user=${dev.github_login}`)}
           `,
           actionUrl: `${BASE_URL}/?user=${dev.github_login}`,
           priority: "high",

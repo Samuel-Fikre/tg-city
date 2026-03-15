@@ -6,9 +6,9 @@ import RoadmapClient from "./RoadmapClient";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Roadmap - Git City",
+  title: "Roadmap - TG City",
   description:
-    "See what's coming next for Git City. Vote on the features you want most.",
+    "See what's coming next for TG City. Vote on the features you want most.",
 };
 
 export default async function RoadmapPage() {

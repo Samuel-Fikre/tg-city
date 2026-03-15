@@ -49,7 +49,7 @@ export async function POST(request: Request) {
           price_data: {
             currency: "usd",
             product_data: {
-              name: `Git City Support - $${amount}`,
+              name: `TG City Support - $${amount}`,
             },
             unit_amount: amount * 100,
           },

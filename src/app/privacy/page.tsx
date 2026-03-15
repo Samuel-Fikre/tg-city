@@ -2,8 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy - Git City",
-  description: "Privacy Policy for Git City.",
+  title: "Privacy Policy - TG City",
+  description: "Privacy Policy for TG City.",
 };
 
 const ACCENT = "#c8e64a";
@@ -114,7 +114,7 @@ export default function PrivacyPage() {
 
           <Section n={8} title="Children">
             <p>
-              Git City is not intended for children under 13. We do not knowingly
+              TG City is not intended for children under 13. We do not knowingly
               collect data from children under 13. If you believe a child has
               provided us with data, contact us for removal.
             </p>
@@ -122,7 +122,7 @@ export default function PrivacyPage() {
 
           <Section n={9} title="Changes">
             <p>
-              We may update this policy at any time. Continued use of Git City
+              We may update this policy at any time. Continued use of TG City
               after changes constitutes acceptance.
             </p>
           </Section>

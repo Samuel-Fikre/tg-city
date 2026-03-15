@@ -1287,7 +1287,7 @@ function HomeContent() {
     for (let i = 0; i < INTRO_TEXT_SCHEDULE.length; i++) {
       timers.push(setTimeout(() => setIntroPhase(i), INTRO_TEXT_SCHEDULE[i]));
     }
-    // Confetti shortly after "Welcome to Git City"
+    // Confetti shortly after "Welcome to TG City"
     timers.push(setTimeout(() => setIntroConfetti(true), INTRO_TEXT_SCHEDULE[3] + 500));
 
     return () => timers.forEach(clearTimeout);
@@ -2176,7 +2176,7 @@ function HomeContent() {
               </p>
             ))}
 
-            {/* Welcome to Git City (phase 3) */}
+            {/* Welcome to TG City (phase 3) */}
             <div
               className="absolute flex flex-col items-center gap-1"
               style={{
@@ -2653,7 +2653,7 @@ function HomeContent() {
                               </button>
                             </div>
                             <div className="space-y-2.5 text-xs normal-case text-muted">
-                              <p><span className="text-cream">1.</span> Install <a href="https://marketplace.visualstudio.com/items?itemName=git-city.gitcity" target="_blank" rel="noopener noreferrer" className="text-[#4ade80] hover:underline">Git City: Pulse</a> in VS Code</p>
+                              <p><span className="text-cream">1.</span> Install <a href="https://marketplace.visualstudio.com/items?itemName=git-city.gitcity" target="_blank" rel="noopener noreferrer" className="text-[#4ade80] hover:underline">TG City: Pulse</a> in VS Code</p>
                               <p><span className="text-cream">2.</span> Cmd+Shift+P &rarr; &ldquo;Pulse: Connect&rdquo;</p>
                               <p><span className="text-cream">3.</span> Paste your key and start coding</p>
                             </div>
@@ -2661,7 +2661,7 @@ function HomeContent() {
                               Your building lights up in ~30s
                             </p>
                             <p className="mt-1.5 text-[10px] normal-case text-muted/50">
-                              Only your username and language are shared publicly. Control what&apos;s sent in VS Code Settings &gt; Git City &gt; Privacy.
+                              Only your username and language are shared publicly. Control what&apos;s sent in VS Code Settings &gt; TG City &gt; Privacy.
                             </p>
                           </div>
                         ) : (
@@ -2674,7 +2674,7 @@ function HomeContent() {
                             </p>
                             <div className="mb-4 space-y-2.5 text-xs normal-case text-muted">
                               <p><span className="text-cream">1.</span> Generate your key below</p>
-                              <p><span className="text-cream">2.</span> Install <a href="https://marketplace.visualstudio.com/items?itemName=git-city.gitcity" target="_blank" rel="noopener noreferrer" className="text-[#4ade80] hover:underline">Git City: Pulse</a> in VS Code</p>
+                              <p><span className="text-cream">2.</span> Install <a href="https://marketplace.visualstudio.com/items?itemName=git-city.gitcity" target="_blank" rel="noopener noreferrer" className="text-[#4ade80] hover:underline">TG City: Pulse</a> in VS Code</p>
                               <p><span className="text-cream">3.</span> Paste key in VS Code, start coding</p>
                             </div>
                             <button
@@ -2700,7 +2700,7 @@ function HomeContent() {
                               {vsCodeKeyLoading ? "Generating..." : vsCodeKeyCopied ? "Key copied to clipboard!" : "Generate API Key"}
                             </button>
                             <p className="mt-3 text-[10px] normal-case text-muted/50">
-                              Only your username and language are shared publicly. You can control this in VS Code Settings &gt; Git City &gt; Privacy.
+                              Only your username and language are shared publicly. You can control this in VS Code Settings &gt; TG City &gt; Privacy.
                             </p>
                           </div>
                         )}
@@ -2811,7 +2811,7 @@ function HomeContent() {
           ) : (
             <div className="px-5 pt-6 pb-5 border-b border-border">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-xs text-muted">GIT CITY</span>
+                <span className="text-xs text-muted">TG City</span>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex h-8 w-8 items-center justify-center border-2 border-border text-muted"
@@ -2955,13 +2955,13 @@ function HomeContent() {
           <div className="pointer-events-auto flex w-full max-w-2xl flex-col items-center gap-2 sm:gap-5">
             <div className="text-center">
               <h1 className="text-2xl text-cream sm:text-3xl md:text-5xl">
-                Git{" "}
+                TG{" "}
                 <span style={{ color: theme.accent }}>City</span>
               </h1>
               <p className="mt-2 text-[10px] leading-relaxed text-cream/80 normal-case">
                 {stats.total_developers > 0
-                  ? `A city of ${stats.total_developers.toLocaleString()} GitHub developers. Find yourself.`
-                  : "A global city of GitHub developers. Find yourself."}
+                  ? `A city of ${stats.total_developers.toLocaleString()} Telegram Channels. Find yourself.`
+                  : "A city of telegram channels. Find yourself."}
               </p>
               <p className="pointer-events-auto mt-1 text-[9px] text-cream/50 normal-case hidden sm:block">
                 built by{" "}
@@ -4200,7 +4200,7 @@ function HomeContent() {
                 <div className="px-4 pt-3 pb-1 flex gap-2">
                   <a
                     href={`https://x.com/intent/tweet?text=${encodeURIComponent(
-                      `I just compared my building with ${comparePair[1].login}'s in Git City. It wasn't even close. What's yours?`
+                      `I just compared my building with ${comparePair[1].login}'s in TG City. It wasn't even close. What's yours?`
                     )}&url=${encodeURIComponent(
                       `${typeof window !== "undefined" ? window.location.origin : ""}/compare/${comparePair[0].login}/${comparePair[1].login}`
                     )}`}

@@ -8,7 +8,7 @@ export default function DevNotFound() {
       <div className="text-center">
         <h1 className="text-5xl text-cream">404</h1>
         <p className="mt-4 text-xs text-muted normal-case">
-          This dev hasn&apos;t been added to Git City yet
+          This dev hasn&apos;t been added to TG City yet
         </p>
         <Link
           href="/"

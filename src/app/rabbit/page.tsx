@@ -432,8 +432,8 @@ function RabbitContent() {
             <a
               href={`https://x.com/intent/tweet?text=${encodeURIComponent(
                 myPosition
-                  ? `I followed the white rabbit in Git City.\nCitizen #${myPosition} to find the other side.`
-                  : `I followed the white rabbit in Git City.`
+                  ? `I followed the white rabbit in TG City.\nCitizen #${myPosition} to find the other side.`
+                  : `I followed the white rabbit in TG City.`
               )}&url=${encodeURIComponent("https://thegitcity.com/rabbit")}`}
               target="_blank"
               rel="noopener noreferrer"

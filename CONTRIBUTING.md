@@ -1,4 +1,4 @@
-# Contributing to Git City
+# Contributing to TG City
 
 Thanks for your interest in contributing! Here's how to get started.
 

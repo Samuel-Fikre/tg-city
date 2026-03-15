@@ -89,7 +89,7 @@ export const DEFAULT_SKY_ADS: SkyAd[] = [
   {
     id: "gitcity",
     text: "THEGITCITY.COM ★ YOUR CODE, YOUR CITY ★ THEGITCITY.COM",
-    brand: "Git City",
+    brand: "TG City",
     description: "A city built from GitHub contributions. Search your username and find your building among thousands of developers.",
     color: "#f8d880",
     bgColor: "#1a1018",
@@ -101,7 +101,7 @@ export const DEFAULT_SKY_ADS: SkyAd[] = [
     id: "advertise",
     text: "ADD YOUR AD HERE",
     brand: "Sky Ads",
-    description: "Want your brand flying over Git City? Planes, blimps, your colors. Get in touch!",
+    description: "Want your brand flying over TG City? Planes, blimps, your colors. Get in touch!",
     color: "#f8d880",
     bgColor: "#1a1018",
     link: "https://thegitcity.com/advertise",

@@ -5,9 +5,9 @@ import PitchDeck from "./PitchDeck";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Pitch Deck - Git City",
+  title: "Pitch Deck - TG City",
   description:
-    "Git City: transforming GitHub profiles into an interactive 3D city. 11,800+ developers, organic growth, revenue from day one.",
+    "TG City: transforming GitHub profiles into an interactive 3D city. 11,800+ developers, organic growth, revenue from day one.",
 };
 
 export default async function PitchPage() {

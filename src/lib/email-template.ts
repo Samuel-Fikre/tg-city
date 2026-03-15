@@ -34,7 +34,7 @@ export function wrapInBaseTemplate(bodyHtml: string, unsubscribeUrl?: string): s
           <!-- Logo -->
           <tr>
             <td align="center" style="padding-bottom: 24px;">
-              <img src="${BASE_URL}/icon-512.png" width="64" height="64" alt="Git City" style="display:block; border-radius:16px; border:0;" />
+              <img src="${BASE_URL}/icon-512.png" width="64" height="64" alt="TG City" style="display:block; border-radius:16px; border:0;" />
             </td>
           </tr>
 

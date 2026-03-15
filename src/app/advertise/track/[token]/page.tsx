@@ -15,7 +15,7 @@ const HISTORICAL_BASELINES: Record<string, { impressions: number; clicks: number
 };
 
 export const metadata: Metadata = {
-  title: "Ad Tracking - Git City Sky Ads",
+  title: "Ad Tracking - TG City Sky Ads",
   robots: { index: false, follow: false },
 };
 

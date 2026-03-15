@@ -1,5 +1,5 @@
 -- ============================================================
--- Git City — Initial Schema
+-- TG City — Initial Schema
 -- ============================================================
 
 -- 1. developers — one row per GitHub user

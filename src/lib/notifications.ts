@@ -53,7 +53,7 @@ export interface SendResult {
 
 // ── Config ──
 
-const FROM = "Git City <noreply@thegitcity.com>";
+const FROM = "TG City <noreply@thegitcity.com>";
 const HMAC_SECRET = process.env.UNSUBSCRIBE_HMAC_SECRET || process.env.CRON_SECRET || "fallback-secret";
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://thegitcity.com";
 

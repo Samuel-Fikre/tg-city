@@ -101,7 +101,7 @@ export async function POST(request: Request) {
       .single();
 
     if (!receiver) {
-      return NextResponse.json({ error: "User not found in Git City" }, { status: 400 });
+      return NextResponse.json({ error: "User not found in TG City" }, { status: 400 });
     }
 
     // Check receiver doesn't already own this item (bought or gifted)

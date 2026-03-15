@@ -1,6 +1,6 @@
 {
   "name": "gitcity",
-  "displayName": "Git City: Pulse",
+  "displayName": "TG City: Pulse",
   "description": "Keep your city alive. When you code, your building glows and powers the signal. Privacy-first: you control what gets shared.",
   "version": "0.3.0",
   "publisher": "git-city",
@@ -40,7 +40,7 @@
       }
     ],
     "configuration": {
-      "title": "Git City",
+      "title": "TG City",
       "properties": {
         "gitCity.enabled": {
           "type": "boolean",
@@ -50,7 +50,7 @@
         "gitCity.apiUrl": {
           "type": "string",
           "default": "https://www.thegitcity.com",
-          "description": "Git City API URL (changing this sends your API key to a different server)",
+          "description": "TG City API URL (changing this sends your API key to a different server)",
           "scope": "application"
         },
         "gitCity.privacy.shareLanguage": {

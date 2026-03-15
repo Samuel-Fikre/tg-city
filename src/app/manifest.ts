@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Git City",
-    short_name: "Git City",
+    name: "TG City",
+    short_name: "TG City",
     description:
       "Explore GitHub users as buildings in a 3D pixel art city. Fly through the city and discover developers.",
     start_url: "/",
