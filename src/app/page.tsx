@@ -1927,6 +1927,7 @@ function HomeContent() {
         decorations={decorations}
         river={river}
         bridges={bridges}
+        districtZones={districtZones}
         flyMode={flyMode}
         flyVehicle={flyVehicle}
         onExitFly={() => {

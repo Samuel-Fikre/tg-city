@@ -11,6 +11,8 @@ import LiveDots from "./LiveDots";
 import type { LiveSession } from "@/lib/useCodingPresence";
 import type { CityBuilding } from "@/lib/github";
 import type { BuildingColors } from "./CityCanvas";
+import type { DistrictZone } from "@/lib/github";
+import DistrictLabel from "./DistrictLabel";
 
 const GRID_CELL_SIZE = 200;
 
@@ -66,6 +68,7 @@ function buildLookup(buildings: CityBuilding[]): BuildingLookup {
 interface CitySceneProps {
   buildings: CityBuilding[];
   colors: BuildingColors;
+  districtZones?: DistrictZone[];
   focusedBuilding?: string | null;
   focusedBuildingB?: string | null;
   hideEffectsFor?: string | null;
@@ -83,6 +86,7 @@ interface CitySceneProps {
 export default function CityScene({
   buildings,
   colors,
+  districtZones,
   focusedBuilding,
   focusedBuildingB,
   hideEffectsFor,
@@ -198,6 +202,11 @@ export default function CityScene({
         flyMode={flyMode}
         ghostPreviewLogin={ghostPreviewLogin}
       />
+
+      {/* District labels: floating above each district */}
+      {districtZones?.map((zone) => (
+        <DistrictLabel key={zone.id} district={zone} />
+      ))}
 
       {/* FocusBeacon: standalone, only when a building is focused */}
       {!introMode && focusedBuildingData && (

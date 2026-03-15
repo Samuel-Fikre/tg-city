@@ -346,16 +346,24 @@ export const DISTRICT_NAMES: Record<string, string> = {
   education: 'Education',
   finance: 'Finance & Business',
   lifestyle: 'Lifestyle',
+  sports: 'Sports',
+  art: 'Art & Culture',
+  crypto: 'Crypto & Blockchain',
+  health: 'Health & Wellness',
 };
 
 export const DISTRICT_COLORS: Record<string, string> = {
   downtown: '#fbbf24',
-  news: '#ef4444',
-  tech: '#3b82f6',
-  entertainment: '#ec4899',
-  education: '#22c55e',
-  finance: '#10b981',
-  lifestyle: '#8b5cf6',
+  news: '#3b82f6',       // Blue
+  tech: '#6b7280',       // Gray/Cyan
+  entertainment: '#ec4899', // Pink
+  education: '#22c55e',  // Green
+  finance: '#eab308',    // Gold
+  lifestyle: '#f97316',  // Orange
+  sports: '#ef4444',     // Red
+  art: '#a855f7',        // Purple
+  crypto: '#facc15',     // Yellow
+  health: '#14b8a6',     // Teal
 };
 
 export const DISTRICT_DESCRIPTIONS: Record<string, string> = {
@@ -366,6 +374,10 @@ export const DISTRICT_DESCRIPTIONS: Record<string, string> = {
   education: 'Learning, courses, tutorials, and knowledge.',
   finance: 'Markets, crypto, business, and investing.',
   lifestyle: 'Health, travel, fashion, and daily life.',
+  sports: 'Athletic events, scores, teams, and fitness.',
+  art: 'Design, creativity, galleries, and museums.',
+  crypto: 'Web3, NFTs, DeFi, and digital currencies.',
+  health: 'Medical, wellness, mental health, and fitness.',
 };
 
 
@@ -397,6 +409,7 @@ export function generateCityLayout(devs: ChannelRecord[]): {
 
   const DISTRICT_ORDER = [
     'news', 'tech', 'entertainment', 'education', 'finance', 'lifestyle',
+    'sports', 'art', 'crypto', 'health',
   ];
 
   const districtGroups: Record<string, ChannelRecord[]> = {};
@@ -463,7 +476,7 @@ export function generateCityLayout(devs: ChannelRecord[]): {
   const RIVER_PUSH = RIVER_WIDTH + 2 * RIVER_MARGIN - STREET_W;
 
   // Distance (in grid cells) from center to district spiral origins
-  const DISTRICT_GRID_RADIUS = 4;
+  const DISTRICT_GRID_RADIUS = 20;
 
   const occupiedCells = new Set<string>();
   let globalDevIndex = 0;
