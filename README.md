@@ -11,7 +11,7 @@ The skyline of **TG-City** is driven by real-time data:
 
 
 ##  Respect & Credits
-This project is a **fork of [Git City](https://github.com/rizqirizon/git-city)** by Rizqi. 
+This project is a **fork of [Git City](https://github.com/srizzon/git-city)** by Rizqi. 
 
 While the original project focused on GitHub contributions, **TG-City** has been heavily modified to:
 - Visualize Telegram API data instead of GitHub events.
