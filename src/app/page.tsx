@@ -1079,18 +1079,17 @@ function HomeContent() {
       }
     } catch { }
 
-    // Apply district override from localStorage (saved when adding channel, TTL 10 min)
+    // Apply district overrides from localStorage (handle -> category map)
     try {
       const raw = localStorage.getItem("gitcity:district_override");
       if (raw) {
-        const { handle, category, ts } = JSON.parse(raw);
-        if (Date.now() - ts < 10 * 60 * 1000) {
+        const overrides = JSON.parse(raw);
+        // overrides is now an object: { [handle]: category }
+        for (const [handle, category] of Object.entries(overrides)) {
           const idx = allDevs.findIndex((d) => d.handle?.toLowerCase() === handle.toLowerCase());
           if (idx !== -1) {
             allDevs[idx] = { ...allDevs[idx], category, district_chosen: true };
           }
-        } else {
-          localStorage.removeItem("gitcity:district_override");
         }
       }
     } catch { }
@@ -1229,18 +1228,17 @@ function HomeContent() {
         setLoadProgress(45);
         await new Promise((r) => setTimeout(r, 0)); // yield to browser
 
-        // Apply district override from localStorage (saved when adding channel, TTL 10 min)
+        // Apply district overrides from localStorage (handle -> category map)
         try {
           const raw = localStorage.getItem("gitcity:district_override");
           if (raw) {
-            const { handle, category, ts } = JSON.parse(raw);
-            if (Date.now() - ts < 10 * 60 * 1000) {
+            const overrides = JSON.parse(raw);
+            // overrides is now an object: { [handle]: category }
+            for (const [handle, category] of Object.entries(overrides)) {
               const idx = allDevs.findIndex((d) => d.handle?.toLowerCase() === handle.toLowerCase());
               if (idx !== -1) {
                 allDevs[idx] = { ...allDevs[idx], category, district_chosen: true };
               }
-            } else {
-              localStorage.removeItem("gitcity:district_override");
             }
           }
         } catch { }
@@ -4958,12 +4956,10 @@ function HomeContent() {
         isOpen={addChannelOpen}
         onClose={() => setAddChannelOpen(false)}
         onSuccess={(handle, category) => {
-          // Save district override to localStorage so it persists through reloadCity
-          localStorage.setItem("gitcity:district_override", JSON.stringify({
-            handle,
-            category,
-            ts: Date.now()
-          }));
+          // Save district override to localStorage as a Map (handle -> category)
+          const existing = JSON.parse(localStorage.getItem('gitcity:district_override') || '{}');
+          existing[handle.toLowerCase()] = category;
+          localStorage.setItem('gitcity:district_override', JSON.stringify(existing));
           reloadCity(true);
           // Fly to the new building after city reloads
           setTimeout(() => {
