@@ -12,23 +12,24 @@ export const metadata: Metadata = {
         ? `https://${process.env.VERCEL_URL}`
         : "http://localhost:3000")
   ),
-  title: "Git City - Your GitHub as a 3D City",
+  title: "TG City - Ethiopia's Telegram City",
   description:
-    "Explore GitHub users as buildings in a 3D pixel art city. Fly through the city and discover developers.",
+    "Explore Ethiopian Telegram channels as buildings in a 3D city. Visualize subscribers, posts, and engagement in real-time.",
   keywords: [
-    "github",
+    "telegram",
+    "ethiopia",
     "3d city",
-    "developer profile",
-    "contributions",
+    "channels",
+    "subscribers",
     "pixel art",
-    "open source",
-    "git visualization",
+    "social media",
+    "visualization",
   ],
   openGraph: {
-    title: "Git City - Your GitHub as a 3D City",
+    title: "TG City - Ethiopia's Telegram Skyline",
     description:
-      "Explore GitHub users as buildings in a 3D pixel art city. Fly through the city and discover developers.",
-    siteName: "Git City",
+      "Explore Ethiopian Telegram channels as buildings in a 3D city. Fly through the skyline and discover creators.",
+    siteName: "TG City",
     type: "website",
     locale: "en_US",
   },
@@ -53,11 +54,11 @@ const BASE_URL =
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  name: "Git City",
+  name: "TG City",
   description:
-    "Your GitHub profile as a 3D pixel art building in an interactive city",
+    "Ethiopian Telegram channels visualized as a 3D pixel art city",
   url: BASE_URL,
-  applicationCategory: "DeveloperApplication",
+  applicationCategory: "SocialMediaApplication",
   operatingSystem: "Web",
   author: {
     "@type": "Person",

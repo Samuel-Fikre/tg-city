@@ -178,25 +178,24 @@ const ERROR_MESSAGES: Record<string, { primary: (u: string) => string; secondary
     secondary: "Check the spelling — could be a typo. Telegram handles are case-insensitive.",
   },
   "org": {
-    primary: (u) => `"@${u}" is an organization, not a person`,
-    secondary: "Git City is for individual profiles. Try searching for one of its contributors by their personal username.",
+    primary: (u) => `"@${u}" cannot be added`,
+    secondary: "This might be a private channel or restricted. Try a different public channel.",
   },
   "no-activity": {
     primary: (u) => `"@${u}" has no public activity yet`,
-    secondary: "Is this you? Open your profile settings, scroll to 'Contributions & activity', and enable 'Include private contributions'. Then search again.",
-    hasLink: true,
+    secondary: "The channel might be too new or inactive. Try a more established channel.",
   },
   "rate-limit": {
     primary: () => "Search limit reached",
-    secondary: "You can look up 10 new profiles per hour. Developers already in the city are unlimited.",
+    secondary: "You can look up 10 new channels per hour. Channels already in the city are unlimited.",
   },
   "github-rate-limit": {
-    primary: () => "GitHub's API is temporarily unavailable",
-    secondary: "Too many requests to GitHub. Try again in a few minutes.",
+    primary: () => "Backend API is temporarily unavailable",
+    secondary: "Too many requests. Try again in a few minutes.",
   },
   "timeout": {
     primary: (u) => `Fetching "@${u}" took too long`,
-    secondary: "GitHub's API was slow to respond. This usually resolves itself — try again in a moment.",
+    secondary: "The Telegram API was slow to respond. This usually resolves itself — try again in a moment.",
     hasRetry: true,
   },
   "network": {
@@ -272,17 +271,6 @@ function SearchFeedback({
       <button onClick={onDismiss} className="absolute top-2 right-2 text-[10px] text-muted transition-colors hover:text-cream">&#10005;</button>
       <p className="text-[11px] text-cream normal-case pr-4">{msg.primary(u)}</p>
       <p className="mt-1 text-[10px] text-muted normal-case">{msg.secondary}</p>
-      {msg.hasLink && (
-        <a
-          href="https://github.com/settings/profile"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-2 inline-block text-[10px] normal-case transition-colors hover:text-cream"
-          style={{ color: accentColor }}
-        >
-          Open Profile Settings &rarr;
-        </a>
-      )}
       {msg.hasRetry && (
         <button
           onClick={onRetry}
@@ -1281,10 +1269,10 @@ function HomeContent() {
   // re-mounts the component and loads fresh data via the mount effect above.
 
   // ─── Intro text phase timing (14s total) ─────────────────────
-  // Phase 0: "Somewhere in the internet..."   0.8s → fade out ~3.8s
-  // Phase 1: "Developers became buildings"    4.2s → fade out ~7.2s
-  // Phase 2: "And commits became floors"      7.6s → fade out ~10.6s
-  // Phase 3: "Welcome to Git City"            11.0s → confetti + hold until end
+  // Phase 0: "Somewhere in the cloud..."         0.8s → fade out ~3.8s
+  // Phase 1: "Telegram channels became buildings" 4.2s → fade out ~7.2s
+  // Phase 2: "And subscribers became height"      7.6s → fade out ~10.6s
+  // Phase 3: "Welcome to TG City"                 11.0s → confetti + hold until end
   const INTRO_TEXT_SCHEDULE = [800, 4200, 7600, 11000];
   const [introConfetti, setIntroConfetti] = useState(false);
 
@@ -2170,9 +2158,9 @@ function HomeContent() {
           <div className="absolute inset-x-0 bottom-0 flex items-center justify-center" style={{ height: "18%" }}>
             {/* Narrative texts (phases 0-2) */}
             {[
-              "Somewhere in the internet...",
-              "Developers became buildings",
-              "And commits became floors",
+              "Somewhere in the cloud...",
+              "Telegram channels became buildings",
+              "And subscribers became height",
             ].map((text, i) => (
               <p
                 key={i}
@@ -2202,7 +2190,7 @@ function HomeContent() {
                 style={{ fontSize: "clamp(1.2rem, 5vw, 2.8rem)" }}
               >
                 Welcome to{" "}
-                <span style={{ color: theme.accent }}>Git City</span>
+                <span style={{ color: theme.accent }}>TG City</span>
               </p>
             </div>
           </div>

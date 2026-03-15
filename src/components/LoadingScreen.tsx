@@ -26,18 +26,18 @@ interface LoadingScreenProps {
 
 const STAGE_MESSAGES: Record<string, string> = {
   init: "Checking your browser...",
-  fetching: "Fetching developers...",
+  fetching: "Fetching channels...",
   generating: "Laying down streets...",
   rendering: "Building the skyline...",
-  ready: "Welcome to the city",
+  ready: "Welcome to TG City",
 };
 
 const TIPS = [
   "Click any building to see that channel's profile",
   "Use Fly Mode to cruise above the skyline",
   "Taller buildings = more subscribers",
-  "Try searching for your Telegram handle",
-  "Buildings glow brighter with more recent activity",
+  "Try searching for your favorite Telegram channel",
+  "Buildings glow brighter with more engagement",
   "You can customize your building in the shop",
   "Explore Mode shows the full city layout",
 ];
@@ -131,7 +131,7 @@ export default function LoadingScreen({
         className="font-pixel text-3xl tracking-[0.2em] sm:text-4xl"
         style={{ color: accentColor }}
       >
-        GIT CITY
+        TG CITY
       </h1>
 
       {/* Stage message */}
