@@ -147,9 +147,7 @@ const DEV_CLASSES = [
   "Sudo Make Me A Sandwich",
 ];
 function getDevClass(login: string) {
-  let h = 0;
-  for (let i = 0; i < login.length; i++) h = ((h << 5) - h + login.charCodeAt(i)) | 0;
-  return DEV_CLASSES[((h % DEV_CLASSES.length) + DEV_CLASSES.length) % DEV_CLASSES.length];
+  return "📍 Addis Ababa";
 }
 
 interface CityStats {
@@ -2584,13 +2582,13 @@ function HomeContent() {
                   <X size={14} />
                 </button>
               </div>
-              <p className="mb-3 text-xs text-muted normal-case leading-relaxed">Your GitHub commits build a real 3D city. Sign in to claim your building.</p>
+              <p className="mb-3 text-xs text-muted normal-case leading-relaxed">Sign in to claim your building and unlock customization.</p>
               <button
                 onClick={() => { handleSignIn(); setMobileMenuOpen(false); }}
                 className="btn-press w-full py-3 text-xs text-bg"
                 style={{ backgroundColor: theme.accent, boxShadow: `2px 2px 0 0 ${theme.shadow}` }}
               >
-                Sign in with GitHub
+                Sign in
               </button>
             </div>
           )}
@@ -2798,7 +2796,7 @@ function HomeContent() {
                     boxShadow: `3px 3px 0 0 ${theme.shadow}`,
                   }}
                 >
-                  Sign in with GitHub
+                  Sign in
                 </button>
                 <button
                   onClick={() => {
@@ -3153,7 +3151,7 @@ function HomeContent() {
                 boxShadow: `2px 2px 0 0 ${theme.shadow}`,
               }}
             >
-              Sign in with GitHub
+              Sign in
             </button>
             <button
               onClick={() => setSignInPromptVisible(false)}
@@ -3310,48 +3308,7 @@ function HomeContent() {
                 </div>
               </div>
 
-              {/* XP Level badge + progress */}
-              {(() => {
-                const bTier = tierFromLevel(selectedBuilding.xp_level ?? 1);
-                const bRank = rankFromLevel(selectedBuilding.xp_level ?? 1);
-                const bProgress = levelProgress(selectedBuilding.xp_total ?? 0);
-                const bXpCurrent = (selectedBuilding.xp_total ?? 0) - xpForLevel(selectedBuilding.xp_level ?? 1);
-                const bXpNeeded = xpForLevel((selectedBuilding.xp_level ?? 1) + 1) - xpForLevel(selectedBuilding.xp_level ?? 1);
-                return (
-                  <div className="mx-4 mb-2 flex items-center gap-2">
-                    <span
-                      className="flex h-7 w-7 items-center justify-center border-2 text-xs font-bold"
-                      style={{ borderColor: bTier.color, color: bTier.color }}
-                    >
-                      {selectedBuilding.xp_level ?? 1}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-bold" style={{ color: bTier.color }}>
-                          Lv {selectedBuilding.xp_level ?? 1} · {bRank.title}
-                        </span>
-                        <span
-                          className="px-1 py-px text-[7px] font-bold"
-                          style={{ backgroundColor: bTier.color + "22", color: bTier.color }}
-                        >
-                          {bTier.name.toUpperCase()}
-                        </span>
-                      </div>
-                      <div className="mt-1 flex items-center gap-1.5">
-                        <div className="h-1 flex-1 bg-border">
-                          <div
-                            className="h-full"
-                            style={{ width: `${Math.max(2, Math.round(bProgress * 100))}%`, backgroundColor: bTier.color }}
-                          />
-                        </div>
-                        <span className="text-[7px] text-muted">{bXpCurrent}/{bXpNeeded}</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* District badge */}
+              {/* District badge with Addis Ababa location */}
               {selectedBuilding.district && (
                 <div className="px-4 pb-2">
                   <span
@@ -3363,15 +3320,26 @@ function HomeContent() {
                 </div>
               )}
 
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-px bg-border/30 mx-4 mb-3 border border-border/50">
+              {/* Location: Addis Ababa with pin */}
+              <div className="px-4 pb-2">
+                <span
+                  className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] text-cream"
+                  style={{
+                    textShadow: `0 0 8px ${theme.accent}60, 0 0 16px ${theme.accent}40`,
+                  }}
+                >
+                  <span>📍</span>
+                  <span>ADDIS ABABA</span>
+                </span>
+              </div>
+
+              {/* Stats - TG City Addis: Rank, Subscribers, Posts, Avg. Views only */}
+              <div className="grid grid-cols-2 gap-px bg-border/30 mx-4 mb-3 border border-border/50">
                 {[
                   { label: "Rank", value: `#${selectedBuilding.rank}` },
                   { label: "Subscribers", value: selectedBuilding.contributions.toLocaleString() },
                   { label: "Posts", value: selectedBuilding.public_repos.toLocaleString() },
                   { label: "Avg. Views", value: selectedBuilding.total_stars.toLocaleString() },
-                  { label: "Kudos", value: (selectedBuilding.kudos_count ?? 0).toLocaleString() },
-                  { label: "Visits", value: (selectedBuilding.visit_count ?? 0).toLocaleString() },
                 ].map((s) => (
                   <div key={s.label} className="bg-bg-card p-2 text-center">
                     <div className="text-xs" style={{ color: theme.accent }}>{s.value}</div>
@@ -3468,100 +3436,6 @@ function HomeContent() {
                   </div>
                 );
               })()}
-
-              {/* Kudos: give kudos (other's building, logged in) */}
-              {session && selectedBuilding.login.toLowerCase() !== authLogin && (
-                <div className="relative mx-4 mb-3">
-                  {/* Floating emoji animation on success */}
-                  {kudosSent && (
-                    <div className="pointer-events-none absolute inset-0 overflow-visible">
-                      {Array.from({ length: 6 }).map((_, i) => (
-                        <span
-                          key={i}
-                          className="kudos-float absolute text-sm"
-                          style={{
-                            left: `${15 + i * 14}%`,
-                            animationDelay: `${i * 0.08}s`,
-                          }}
-                        >
-                          {["👏", "⭐", "💛", "✨", "👏", "⭐"][i]}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  <button
-                    onClick={handleGiveKudos}
-                    disabled={kudosSending || kudosSent || !!kudosError}
-                    className={[
-                      "btn-press w-full py-2 text-[10px] text-bg transition-all duration-300",
-                      kudosSent ? "scale-[1.02]" : "",
-                    ].join(" ")}
-                    style={{
-                      backgroundColor: kudosError ? "#ff4444" : kudosSent ? "#39d353" : theme.accent,
-                      boxShadow: kudosError
-                        ? "0 0 12px rgba(255,68,68,0.4)"
-                        : kudosSent
-                          ? "0 0 12px rgba(57,211,83,0.4)"
-                          : `2px 2px 0 0 ${theme.shadow}`,
-                    }}
-                  >
-                    {kudosSending ? (
-                      <span className="animate-pulse">Sending...</span>
-                    ) : kudosError ? (
-                      <span>{kudosError}</span>
-                    ) : kudosSent ? (
-                      <span>+1 Kudos!</span>
-                    ) : (
-                      "Give Kudos"
-                    )}
-                  </button>
-                  <button
-                    onClick={handleOpenGift}
-                    className="btn-press mt-1.5 w-full border-2 border-border py-1.5 text-[9px] text-cream transition-colors hover:border-border-light"
-                  >
-                    Send Gift
-                  </button>
-                  {/* Raid button */}
-                  {raidState.phase === "idle" && raidState.error && (
-                    <p className="mt-1.5 text-center text-[10px] text-red-400">{raidState.error}</p>
-                  )}
-                  <button
-                    onClick={() => {
-                      if (authLogin && selectedBuilding) {
-                        raidActions.startPreview(selectedBuilding.login, buildings, authLogin);
-                      }
-                    }}
-                    disabled={raidState.loading}
-                    className="btn-press mt-1.5 w-full border-[3px] border-red-500/60 px-4 py-2 text-xs text-red-400 transition-colors hover:bg-red-500/10"
-                  >
-                    {raidState.loading ? "Loading..." : "\u2694\ufe0f BATTLE \u2014 Win +50 XP"}
-                  </button>
-                </div>
-              )}
-
-              {/* A3: Disabled action buttons for non-logged users */}
-              {!session && (
-                <div className="mx-4 mb-3 space-y-1.5">
-                  <button
-                    onClick={() => { trackDisabledButtonClicked("kudos"); handleSignIn(); }}
-                    className="btn-press w-full py-2 text-[10px] border-2 border-dashed border-border/50 text-muted/60 transition-colors hover:border-border hover:text-muted"
-                  >
-                    &#x1F512; Give Kudos
-                  </button>
-                  <button
-                    onClick={() => { trackDisabledButtonClicked("gift"); handleSignIn(); }}
-                    className="btn-press w-full py-1.5 text-[9px] border-2 border-dashed border-border/50 text-muted/60 transition-colors hover:border-border hover:text-muted"
-                  >
-                    &#x1F512; Send Gift
-                  </button>
-                  <button
-                    onClick={() => { trackDisabledButtonClicked("raid"); handleSignIn(); }}
-                    className="btn-press w-full py-2 text-[10px] border-2 border-dashed border-red-500/30 text-red-400/40 transition-colors hover:border-red-500/60 hover:text-red-400/70"
-                  >
-                    &#x1F512; &#x2694;&#xFE0F; BATTLE
-                  </button>
-                </div>
-              )}
 
               {/* Own building: copy invite link */}
               {selectedBuilding.login.toLowerCase() === authLogin && (
@@ -3718,7 +3592,6 @@ function HomeContent() {
           { label: "Subscribers", key: "contributions" },
           { label: "Avg. Views", key: "total_stars" },
           { label: "Posts", key: "public_repos" },
-          { label: "Kudos", key: "kudos_count" },
         ];
         let totalAWins = 0;
         let totalBWins = 0;
