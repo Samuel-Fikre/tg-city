@@ -434,16 +434,23 @@ export function generateCityLayout(devs: ChannelRecord[]): {
     return result;
   }
 
-  // ── Extract top 50 global devs as "downtown" (center, around the spire) ──
-  // BUT: Exclude any devs that have a valid category (trust the database)
+  // ── Extract top 20 global devs as "downtown" (center, around the spire) ──
+  // AND: Include top 20 channels by subscribers regardless of category
   const DOWNTOWN_COUNT = 50;
+  const TOP_SUBSCRIBER_COUNT = 20; // Top N channels by subscribers always in downtown
   const LOTS_PER_BLOCK = BLOCK_SIZE * BLOCK_SIZE; // 16
   const allDevsSorted = [...devs].sort((a, b) =>
     (composites.get(b.handle) ?? 0) - (composites.get(a.handle) ?? 0)
   );
-  // Only put in downtown if they have NO category assigned
+  // Sort by subscribers for the "elite" downtown core
+  const bySubscribers = [...devs].sort((a, b) =>
+    (b.subCount ?? 0) - (a.subCount ?? 0)
+  );
+  const topBySubscribers = new Set(bySubscribers.slice(0, TOP_SUBSCRIBER_COUNT).map(d => d.handle));
+  
+  // Include: Top 20 by subscribers OR channels with no category
   const downtownDevs = allDevsSorted
-    .filter(d => !d.category || d.category.trim() === '')
+    .filter(d => topBySubscribers.has(d.handle) || !d.category || d.category.trim() === '')
     .slice(0, DOWNTOWN_COUNT);
   const downtownSet = new Set(downtownDevs.map(d => d.handle));
 
@@ -480,7 +487,7 @@ export function generateCityLayout(devs: ChannelRecord[]): {
   const RIVER_PUSH = RIVER_WIDTH + 2 * RIVER_MARGIN - STREET_W;
 
   // Distance (in grid cells) from center to district spiral origins
-  const DISTRICT_GRID_RADIUS = 20;
+  const DISTRICT_GRID_RADIUS = 10;
 
   const occupiedCells = new Set<string>();
   let globalDevIndex = 0;
@@ -658,8 +665,10 @@ export function generateCityLayout(devs: ChannelRecord[]): {
 
     while (devIdx < clusterDevs.length) {
       const [bx, by] = spiralCoord(spiralIdx);
-      const gx = ogx + bx;
-      const gz = ogz + by;
+      // Scale spiral coordinates for denser packing (0.85 = moderately compact)
+      const DENSITY_FACTOR = 0.85;
+      const gx = ogx + Math.round(bx * DENSITY_FACTOR);
+      const gz = ogz + Math.round(by * DENSITY_FACTOR);
       const key = `${gx},${gz}`;
 
       if (occupiedCells.has(key)) { spiralIdx++; continue; }
