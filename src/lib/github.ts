@@ -53,6 +53,8 @@ export interface ChannelRecord {
   raid_xp?: number;
   active_raid_tag?: { attacker_login: string; tag_style: string; expires_at: string } | null;
   rabbit_completed?: boolean;
+  // District selection flag - if true, user explicitly chose a category
+  district_chosen?: boolean;
 }
 
 export interface TopRepo {
@@ -415,12 +417,15 @@ export function generateCityLayout(devs: ChannelRecord[]): {
   }
 
   // ── Extract top 50 global devs as "downtown" (center, around the spire) ──
+  // BUT: Exclude any devs that have district_chosen: true (user explicitly picked a category)
   const DOWNTOWN_COUNT = 50;
   const LOTS_PER_BLOCK = BLOCK_SIZE * BLOCK_SIZE; // 16
   const allDevsSorted = [...devs].sort((a, b) =>
     (composites.get(b.handle) ?? 0) - (composites.get(a.handle) ?? 0)
   );
-  const downtownDevs = allDevsSorted.slice(0, DOWNTOWN_COUNT);
+  const downtownDevs = allDevsSorted
+    .filter(d => !d.district_chosen)
+    .slice(0, DOWNTOWN_COUNT);
   const downtownSet = new Set(downtownDevs.map(d => d.handle));
 
   for (let i = 0; i < downtownDevs.length; i += LOTS_PER_BLOCK) {
@@ -504,9 +509,10 @@ export function generateCityLayout(devs: ChannelRecord[]): {
       const floors = Math.max(3, Math.floor(height / floorH));
       const windowsPerFloor = Math.max(3, Math.floor(w / 5));
       const sideWindowsPerFloor = Math.max(3, Math.floor(d / 5));
-      const did = downtownOverride.has(dev.handle)
-        ? 'downtown'
-        : (dev.category ?? 'news');
+      // Respect district_chosen: if user explicitly picked a category, never force to Downtown
+      const did = (dev.district_chosen || !downtownOverride.has(dev.handle))
+        ? (dev.category ?? 'news')
+        : 'downtown';
 
       buildings.push({
         login: dev.handle,
