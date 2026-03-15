@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef, useMemo, Suspense } from "react";
-import { Menu, X } from "lucide-react";
+import { AddChannelModal } from "@/components/AddChannelModal";
+import { Plus, Menu, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import type { Session } from "@supabase/supabase-js";
@@ -215,11 +216,13 @@ function SearchFeedback({
   accentColor,
   onDismiss,
   onRetry,
+  onAddChannel,
 }: {
   feedback: { type: "loading" | "error"; code?: string; username?: string; raw?: string } | null;
   accentColor: string;
   onDismiss: () => void;
   onRetry: () => void;
+  onAddChannel?: () => void;
 }) {
   const [phaseIndex, setPhaseIndex] = useState(0);
 
@@ -286,6 +289,15 @@ function SearchFeedback({
           className="btn-press mt-2 border-2 border-border px-3 py-1 text-[10px] text-cream transition-colors hover:border-border-light"
         >
           Retry
+        </button>
+      )}
+      {code === "not-found" && onAddChannel && (
+        <button
+          onClick={() => { onAddChannel(); onDismiss(); }}
+          className="btn-press mt-2 border-2 px-3 py-1 text-[10px] text-bg transition-colors"
+          style={{ borderColor: accentColor, backgroundColor: accentColor }}
+        >
+          Not here? Add it now &rarr;
         </button>
       )}
     </div>
@@ -515,6 +527,9 @@ function HomeContent() {
   // A8: Ghost preview for own building
   const ghostPreviewShownRef = useRef(false);
   const [ghostPreviewLogin, setGhostPreviewLogin] = useState<string | null>(null);
+
+  // Add Channel Modal
+  const [addChannelOpen, setAddChannelOpen] = useState(false);
 
   // Raid system
   const [raidState, raidActions] = useRaidSequence();
@@ -3142,7 +3157,7 @@ function HomeContent() {
             )}
 
             {/* Search Feedback: loading phases + errors */}
-            <SearchFeedback feedback={feedback} accentColor={theme.accent} onDismiss={() => setFeedback(null)} onRetry={searchUser} />
+            <SearchFeedback feedback={feedback} accentColor={theme.accent} onDismiss={() => setFeedback(null)} onRetry={searchUser} onAddChannel={() => setAddChannelOpen(true)} />
 
             {/* Loading indicator removed — LoadingScreen overlay handles this */}
 
@@ -4057,7 +4072,7 @@ function HomeContent() {
             </form>
             {feedback && (
               <div className="mt-1.5">
-                <SearchFeedback feedback={feedback} accentColor={theme.accent} onDismiss={() => setFeedback(null)} onRetry={searchUser} />
+                <SearchFeedback feedback={feedback} accentColor={theme.accent} onDismiss={() => setFeedback(null)} onRetry={searchUser} onAddChannel={() => setAddChannelOpen(true)} />
               </div>
             )}
           </div>
@@ -5037,6 +5052,35 @@ function HomeContent() {
       {rabbitCompletion && (
         <RabbitCompletion onComplete={() => setRabbitCompletion(false)} />
       )}
+
+      {/* Add Channel Modal */}
+      <AddChannelModal
+        isOpen={addChannelOpen}
+        onClose={() => setAddChannelOpen(false)}
+        onSuccess={(handle) => {
+          reloadCity(true);
+          // Fly to the new building after city reloads
+          setTimeout(() => {
+            const building = buildings.find((b) => b.login.toLowerCase() === handle.toLowerCase());
+            if (building) {
+              setFocusedBuilding(building.login);
+              setSelectedBuilding(building);
+              setExploreMode(true);
+            }
+          }, 1500); // Wait for city to reload
+        }}
+        accentColor={theme.accent}
+      />
+
+      {/* Floating Action Button - Add Channel */}
+      <button
+        onClick={() => setAddChannelOpen(true)}
+        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full border-2 border-border/50 bg-bg-raised/80 backdrop-blur-md shadow-lg transition-all hover:scale-110 hover:bg-bg-raised hover:border-border"
+        style={{ boxShadow: `0 4px 20px ${theme.accent}30` }}
+        title="Add Channel"
+      >
+        <Plus className="h-6 w-6" style={{ color: theme.accent }} />
+      </button>
 
     </main>
   );
