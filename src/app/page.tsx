@@ -2834,14 +2834,6 @@ function HomeContent() {
           <div className="flex-1 overflow-y-auto">
             <div className="divide-y divide-border/40">
               <Link
-                href={shopHref}
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-between px-5 py-4 active:bg-white/5"
-              >
-                <span className="text-sm text-cream">Shop</span>
-                <span className="text-xs text-muted" style={{ color: theme.accent }}>&#8594;</span>
-              </Link>
-              <Link
                 href="/live"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center justify-between px-5 py-4 active:bg-white/5"
@@ -2861,17 +2853,6 @@ function HomeContent() {
                 className="flex items-center justify-between px-5 py-4 active:bg-white/5"
               >
                 <span className="text-sm text-cream">&#9819; Leaderboard</span>
-                <span className="text-xs" style={{ color: theme.accent }}>&#8594;</span>
-              </Link>
-              <Link
-                href="/advertise"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-between px-5 py-4 active:bg-white/5"
-              >
-                <span className="flex items-center gap-2 text-sm" style={{ color: theme.accent }}>
-                  Place your Ad
-                  <span className="px-1 py-px text-[8px] font-bold text-bg leading-none" style={{ backgroundColor: theme.accent }}>NEW</span>
-                </span>
                 <span className="text-xs" style={{ color: theme.accent }}>&#8594;</span>
               </Link>
               <a
@@ -3028,53 +3009,7 @@ function HomeContent() {
                     </a>
                   );
                 })()
-              ) : (
-                // ── Total Developers mode ──
-                (() => {
-                  const MILESTONES = [10000, 20000, 50000, 100000];
-                  const count = stats.total_developers;
-                  if (count <= 0) return null;
-
-                  const target = MILESTONES.find((m) => count < m);
-                  if (!target) return null;
-                  const prev = MILESTONES[MILESTONES.indexOf(target) - 1] ?? 0;
-                  const progress = ((count - prev) / (target - prev)) * 100;
-                  const remaining = target - count;
-                  const label = target >= 1000 ? `${target / 1000}K` : target.toLocaleString();
-                  return (
-                    <div className="w-full max-w-sm">
-                      <div className="border-[2px] border-border bg-bg/80 px-4 py-3 backdrop-blur-sm">
-                        <div className="mb-2 flex items-baseline justify-between">
-                          <span className="text-[9px] tracking-wider" style={{ color: theme.accent }}>
-                            ROAD TO {label}
-                          </span>
-                          <span className="text-[9px] text-cream/60">
-                            {remaining.toLocaleString()} to go
-                          </span>
-                        </div>
-                        <div className="relative h-2.5 w-full overflow-hidden border-[2px] border-border bg-bg">
-                          <div
-                            className="absolute inset-y-0 left-0 transition-all duration-1000"
-                            style={{
-                              width: `${progress}%`,
-                              backgroundColor: theme.accent,
-                              boxShadow: `0 0 8px ${theme.accent}60`,
-                            }}
-                          />
-                        </div>
-                        <div className="mt-2 flex items-baseline justify-between">
-                          <span className="text-[10px] text-cream">
-                            {count.toLocaleString()} <span className="text-cream/40">/ {target.toLocaleString()}</span>
-                          </span>
-                          <span className="text-[8px] text-cream/40 normal-case">
-                            Something unlocks at {label}...
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })()
-              )}
+              ) : null}
             </div>
 
             {/* Search / Welcome CTA takeover */}
@@ -3299,26 +3234,6 @@ function HomeContent() {
               {/* Nav + Auth — desktop only (mobile uses bottom bar) */}
               <div className="hidden sm:flex items-center justify-center gap-2">
                 <Link
-                  href={shopHref}
-                  className="btn-press border-[3px] border-border bg-bg/80 px-4 py-1.5 text-[10px] backdrop-blur-sm transition-colors hover:border-border-light"
-                  style={{ color: theme.accent }}
-                >
-                  Shop
-                </Link>
-                <Link
-                  href="/advertise"
-                  className="btn-press relative border-[3px] px-4 py-1.5 text-[10px] backdrop-blur-sm transition-colors"
-                  style={{ color: theme.accent, borderColor: theme.accent + "60", backgroundColor: theme.accent + "12" }}
-                >
-                  Place your Ad
-                  <span
-                    className="absolute -top-1.5 -right-2 rounded-sm px-1 py-px text-[7px] font-bold leading-none text-bg"
-                    style={{ backgroundColor: theme.accent }}
-                  >
-                    NEW
-                  </span>
-                </Link>
-                <Link
                   href="/leaderboard"
                   className="btn-press border-[3px] border-border bg-bg/80 px-4 py-1.5 text-[10px] backdrop-blur-sm transition-colors hover:border-border-light"
                   style={{ color: theme.accent }}
@@ -3327,15 +3242,7 @@ function HomeContent() {
                 </Link>
               </div>
               <div className="hidden sm:flex items-center justify-center gap-2">
-                {!session ? (
-                  <button
-                    onClick={handleSignIn}
-                    className="btn-press flex items-center gap-1.5 border-[3px] border-border bg-bg/80 px-3 py-1.5 text-[10px] backdrop-blur-sm transition-colors hover:border-border-light"
-                  >
-                    <span style={{ color: theme.accent }}>G</span>
-                    <span className="text-cream">Sign in</span>
-                  </button>
-                ) : (
+                {session && (
                   <>
                     {canClaim && (
                       <button
@@ -3396,41 +3303,13 @@ function HomeContent() {
       {!flyMode && !exploreMode && !introMode && !rabbitCinematic && buildings.length > 0 && (
         <nav className="pointer-events-auto fixed inset-x-0 bottom-0 z-35 hidden items-center justify-around border-t-2 border-border bg-bg/95 px-1 py-2 backdrop-blur-md sm:hidden">
           <Link
-            href={shopHref}
-            className="btn-press border-2 border-border px-3 py-1.5 text-[10px] transition-colors active:bg-white/5"
-            style={{ color: theme.accent }}
-          >
-            Shop
-          </Link>
-          <Link
-            href="/advertise"
-            className="btn-press relative border-2 px-3 py-1.5 text-[10px] transition-colors active:bg-white/5"
-            style={{ color: theme.accent, borderColor: theme.accent + "60", backgroundColor: theme.accent + "12" }}
-          >
-            Ad
-            <span
-              className="absolute -top-1.5 -right-1.5 rounded-sm px-0.5 py-px text-[6px] font-bold leading-none text-bg"
-              style={{ backgroundColor: theme.accent }}
-            >
-              NEW
-            </span>
-          </Link>
-          <Link
             href="/leaderboard"
             className="btn-press border-2 border-border px-3 py-1.5 text-[10px] transition-colors active:bg-white/5"
             style={{ color: theme.accent }}
           >
             &#9819; Rank
           </Link>
-          {!session ? (
-            <button
-              onClick={handleSignIn}
-              className="btn-press border-2 border-border px-3 py-1.5 text-[10px] transition-colors active:bg-white/5"
-            >
-              <span style={{ color: theme.accent }}>G</span>{" "}
-              <span className="text-cream">Sign in</span>
-            </button>
-          ) : (
+          {session ? (
             <>
               {canClaim && (
                 <button
@@ -3455,7 +3334,7 @@ function HomeContent() {
                 )}
               </Link>
             </>
-          )}
+          ) : null}
         </nav>
       )}
 
