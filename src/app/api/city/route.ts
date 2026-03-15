@@ -60,6 +60,7 @@ export async function GET(request: Request) {
         fetch_priority: channel.fetch_priority ?? 0,
         claimed_at: channel.claimed_at ?? null,
         district: channel.district ?? null,
+        category: channel.category ?? null,
         owned_items: channel.owned_items ?? [],
         custom_color: channel.custom_color ?? null,
         billboard_images: channel.billboard_images ?? [],

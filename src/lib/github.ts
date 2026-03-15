@@ -340,8 +340,9 @@ function precomputeComposites(
 
 export const DISTRICT_NAMES: Record<string, string> = {
   downtown: 'Downtown',
+  // Normalized lowercase keys matching database categories
   news: 'News & Media',
-  tech: 'Technology',
+  technology: 'Technology',        // matches "Technology" from DB
   entertainment: 'Entertainment',
   education: 'Education',
   finance: 'Finance & Business',
@@ -350,12 +351,13 @@ export const DISTRICT_NAMES: Record<string, string> = {
   art: 'Art & Culture',
   crypto: 'Crypto & Blockchain',
   health: 'Health & Wellness',
+  general: 'General',              // matches "General" from DB
 };
 
 export const DISTRICT_COLORS: Record<string, string> = {
   downtown: '#fbbf24',
   news: '#3b82f6',       // Blue
-  tech: '#6b7280',       // Gray/Cyan
+  technology: '#6b7280', // Gray/Cyan - matches DB "Technology"
   entertainment: '#ec4899', // Pink
   education: '#22c55e',  // Green
   finance: '#eab308',    // Gold
@@ -364,12 +366,13 @@ export const DISTRICT_COLORS: Record<string, string> = {
   art: '#a855f7',        // Purple
   crypto: '#facc15',     // Yellow
   health: '#14b8a6',     // Teal
+  general: '#94a3b8',    // Slate - for General category
 };
 
 export const DISTRICT_DESCRIPTIONS: Record<string, string> = {
   downtown: 'The elite core. Top 50 channels by global rank.',
   news: 'Real-time updates, journalism, and breaking stories.',
-  tech: 'Innovation, software, and digital transformation.',
+  technology: 'Innovation, software, and digital transformation.',
   entertainment: 'Movies, music, memes, and viral content.',
   education: 'Learning, courses, tutorials, and knowledge.',
   finance: 'Markets, crypto, business, and investing.',
@@ -378,6 +381,7 @@ export const DISTRICT_DESCRIPTIONS: Record<string, string> = {
   art: 'Design, creativity, galleries, and museums.',
   crypto: 'Web3, NFTs, DeFi, and digital currencies.',
   health: 'Medical, wellness, mental health, and fitness.',
+  general: 'General purpose channels and mixed content.',
 };
 
 
@@ -408,13 +412,14 @@ export function generateCityLayout(devs: ChannelRecord[]): {
   const composites = precomputeComposites(devs, maxContrib, maxStars, maxContribV2);
 
   const DISTRICT_ORDER = [
-    'news', 'tech', 'entertainment', 'education', 'finance', 'lifestyle',
-    'sports', 'art', 'crypto', 'health',
+    'news', 'technology', 'entertainment', 'education', 'finance', 'lifestyle',
+    'sports', 'art', 'crypto', 'health', 'general',
   ];
 
   const districtGroups: Record<string, ChannelRecord[]> = {};
   for (const dev of devs) {
-    const did = dev.category ?? 'news';
+    // Normalize category to lowercase for consistent grouping
+    const did = dev.category?.toLowerCase() || 'general';
     if (!districtGroups[did]) districtGroups[did] = [];
     districtGroups[did].push(dev);
   }
@@ -430,14 +435,15 @@ export function generateCityLayout(devs: ChannelRecord[]): {
   }
 
   // ── Extract top 50 global devs as "downtown" (center, around the spire) ──
-  // BUT: Exclude any devs that have district_chosen: true (user explicitly picked a category)
+  // BUT: Exclude any devs that have a valid category (trust the database)
   const DOWNTOWN_COUNT = 50;
   const LOTS_PER_BLOCK = BLOCK_SIZE * BLOCK_SIZE; // 16
   const allDevsSorted = [...devs].sort((a, b) =>
     (composites.get(b.handle) ?? 0) - (composites.get(a.handle) ?? 0)
   );
+  // Only put in downtown if they have NO category assigned
   const downtownDevs = allDevsSorted
-    .filter(d => !d.district_chosen)
+    .filter(d => !d.category || d.category.trim() === '')
     .slice(0, DOWNTOWN_COUNT);
   const downtownSet = new Set(downtownDevs.map(d => d.handle));
 
@@ -447,8 +453,6 @@ export function generateCityLayout(devs: ChannelRecord[]): {
     const shuffled = seededShuffle(slice, hashStr('downtown') + i);
     for (let j = 0; j < shuffled.length; j++) downtownDevs[i + j] = shuffled[j];
   }
-
-  const downtownOverride = new Set(downtownDevs.map(d => d.handle));
 
   // ── Per-district dev arrays (sorted by composite, block-shuffled, minus downtown) ──
   const districtDevArrays: { did: string; devs: ChannelRecord[] }[] = [];
@@ -522,10 +526,10 @@ export function generateCityLayout(devs: ChannelRecord[]): {
       const floors = Math.max(3, Math.floor(height / floorH));
       const windowsPerFloor = Math.max(3, Math.floor(w / 5));
       const sideWindowsPerFloor = Math.max(3, Math.floor(d / 5));
-      // Respect district_chosen: if user explicitly picked a category, never force to Downtown
-      const did = (dev.district_chosen || !downtownOverride.has(dev.handle))
-        ? (dev.category ?? 'news')
-        : 'downtown';
+      // Trust the database: use category directly, default to 'general'
+      const did = dev.category?.toLowerCase() || 'general';
+      // district_chosen is true if the record has a category
+      const isDistrictChosen = !!dev.category;
 
       buildings.push({
         login: dev.handle,
@@ -554,7 +558,7 @@ export function generateCityLayout(devs: ChannelRecord[]): {
         xp_total: (dev as unknown as Record<string, unknown>).xp_total as number ?? 0,
         xp_level: (dev as unknown as Record<string, unknown>).xp_level as number ?? 1,
         district: did,
-        district_chosen: (dev as unknown as Record<string, unknown>).district_chosen as boolean ?? false,
+        district_chosen: isDistrictChosen,
         position: [posX, 0, posZ],
         width: w,
         depth: d,
