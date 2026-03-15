@@ -13,28 +13,20 @@ type Lang = "en" | "pt";
 
 const MESSAGES: Record<Lang, string[]> = {
   en: [
-    "This is a transmission. You're receiving it because you found the antenna, and the antenna only responds to people paying attention.",
-    "Behind every building you see, there's a real commit. Behind every lit window, a real dev. I built this to make the invisible visible. One dev, a few weekends, and a signal that reached over two million people in two weeks. Fifty thousand buildings. Zero ads. Just developers finding their city and passing the signal forward.",
-    "Transmitting costs something. Servers, database, API calls. Every building that goes up, the cost goes up with it. Right now, I'm the one keeping this antenna on.",
-    "If this city means something to you, help me keep the signal alive.",
+    "Welcome to a 3D visualization of the Ethiopian Telegram ecosystem.",
+    "This city is built from real data. Each building represents a channel, with heights determined by subscribers and widths by engagement. From news hubs to entertainment districts, this is a map of our digital community.",
+    "Explore the districts, find your favorite channels, and see the scale of the network.",
   ],
   pt: [
-    "Isso é uma transmissão. Você está recebendo porque encontrou a antena, e a antena só responde para quem está prestando atenção.",
-    "Por trás de cada prédio que você vê, existe um commit real. Por trás de cada janela acesa, um dev real. Eu construí isso para tornar o invisível visível. Um dev, alguns fins de semana, e um sinal que chegou em mais de dois milhões de pessoas em duas semanas. Cinquenta mil prédios. Zero ads. Só devs encontrando sua cidade e passando o sinal adiante.",
-    "Transmitir custa. Servidores, banco de dados, API calls. Cada prédio que sobe, o custo sobe junto. Por enquanto, sou eu que mantenho essa antena ligada.",
-    "Se essa cidade significa algo pra você, me ajuda a manter o sinal vivo.",
+   
   ],
 };
 
 const SIGNATURE: Record<Lang, string> = {
-  en: "// samuel, founder, solo dev, citizen #1",
-  pt: "// samuel, fundador, dev solo, cidadão #1",
+  en: "// Samuel Fikre, Developer",
+  pt: "// Samuel Fikre",
 };
 
-const PS_TEXT: Record<Lang, string> = {
-  en: "P.S. Would the white rabbit have found you if you had chosen the other one?",
-  pt: "P.S. Será que o coelho branco te encontraria se você tivesse escolhido a outra?",
-};
 
 const CHAR_DELAY = 25;
 const PARAGRAPH_PAUSE = 400;
@@ -195,7 +187,7 @@ export default function FounderMessage({ onClose, session, hasClaimed, onSignIn 
             className="font-pixel text-[8px] sm:text-[9px] tracking-wider"
             style={{ color: "rgba(0, 255, 65, 0.3)" }}
           >
-            &gt; TRANSMISSION FROM SPIRE_01
+            &gt; &gt; TG-CITY: Ethiopia
           </div>
 
           <div className="flex items-center gap-1">
@@ -315,7 +307,7 @@ export default function FounderMessage({ onClose, session, hasClaimed, onSignIn 
                 onMouseEnter={(e) => { e.currentTarget.style.background = "#00cc33"; e.currentTarget.style.borderColor = "#00cc33"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = "#00ff41"; e.currentTarget.style.borderColor = "#00ff41"; }}
               >
-                {lang === "en" ? "Connect with GitHub — get your building" : "Conectar com GitHub — resgatar seu prédio"}
+                {lang === "en" ? "Join the City" : "Join the city"}
               </button>
             ) : (
               <a
@@ -355,7 +347,7 @@ export default function FounderMessage({ onClose, session, hasClaimed, onSignIn 
               </a>
             ) : (
               <a
-                href="https://github.com/srizzon/git-city"
+                href="https://github.com/Samuel-Fikre/tg-city"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block font-pixel text-[10px] sm:text-[11px] px-4 py-2 uppercase tracking-wider transition-all duration-300"
@@ -368,33 +360,14 @@ export default function FounderMessage({ onClose, session, hasClaimed, onSignIn 
                 onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(0, 255, 65, 0.15)"; e.currentTarget.style.borderColor = "#00ff41"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(0, 255, 65, 0.05)"; e.currentTarget.style.borderColor = "rgba(0, 255, 65, 0.4)"; }}
               >
-                {lang === "en" ? "Star on GitHub" : "Dar estrela no GitHub"}
+                {lang === "en" ? "View Project" : "Ver Projeto"}
               </a>
             )}
 
-            {/* Tertiary — always visible */}
-            <a
-              href="/support"
-              className="font-pixel text-[9px] uppercase tracking-wider transition-colors"
-              style={{ color: "rgba(0, 255, 65, 0.4)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#00ff41")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(0, 255, 65, 0.4)")}
-            >
-              {lang === "en" ? "Keep the signal alive →" : "Manter o sinal vivo →"}
-            </a>
+            
           </div>
 
-          {/* P.S. */}
-          <p
-            className="font-pixel text-[8px] sm:text-[9px] mt-8 mb-2 italic transition-all duration-1000"
-            style={{
-              color: "rgba(0, 255, 65, 0.35)",
-              opacity: showPS ? 1 : 0,
-              transform: showPS ? "translateY(0)" : "translateY(8px)",
-            }}
-          >
-            {PS_TEXT[lang]}
-          </p>
+          {/* P.S. removed */}
         </div>
 
         {/* Skip footer */}
