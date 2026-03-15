@@ -524,7 +524,7 @@ function HomeContent() {
 
   // Fetch GitHub star count + Discord member count
   useEffect(() => {
-    fetch("https://api.github.com/repos/srizzon/git-city")
+    fetch("https://api.github.com/repos/srizzon/tg-city")
       .then((r) => r.ok ? r.json() : null)
       .then((d) => { if (d?.stargazers_count != null) setStarCount(d.stargazers_count); })
       .catch(() => { });
@@ -2633,7 +2633,7 @@ function HomeContent() {
                 <span className="text-xs" style={{ color: theme.accent }}>&#8594;</span>
               </a>
               <a
-                href="https://github.com/srizzon/git-city"
+                href="https://github.com/srizzon/tg-city"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setMobileMenuOpen(false)}
@@ -2707,18 +2707,6 @@ function HomeContent() {
                   ? `A city of ${stats.total_developers.toLocaleString()} Telegram Channels. Find yourself.`
                   : "A city of telegram channels. Find yourself."}
               </p>
-              <p className="pointer-events-auto mt-1 text-[9px] text-cream/50 normal-case hidden sm:block">
-                built by{" "}
-                <a
-                  href="https://x.com/samuelrizzondev"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="transition-colors hover:text-cream"
-                  style={{ color: theme.accent }}
-                >
-                  @samuelrizzondev
-                </a>
-              </p>
             </div>
 
             {/* Milestone progress banner — hidden on mobile to reduce clutter */}
@@ -2736,7 +2724,7 @@ function HomeContent() {
                   const label = target >= 1000 ? `${target / 1000}K` : target.toLocaleString();
                   return (
                     <a
-                      href="https://github.com/srizzon/git-city"
+                      href="https://github.com/srizzon/tg-city"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block w-full max-w-sm group"

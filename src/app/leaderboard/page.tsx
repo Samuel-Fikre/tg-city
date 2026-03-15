@@ -1,53 +1,34 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Suspense } from "react";
-import { getSupabaseAdmin } from "@/lib/supabase";
-import LeaderboardTracker from "@/components/LeaderboardTracker";
-import LeaderboardYouBadge, { LeaderboardAuthProvider } from "@/components/LeaderboardYouBadge";
-import LeaderboardUserPosition from "@/components/LeaderboardUserPosition";
-import LeaderboardYouVsNext from "@/components/LeaderboardYouVsNext";
-import FlyLeaderboard from "@/components/FlyLeaderboard";
-import DailiesLeaderboard from "@/components/DailiesLeaderboard";
-import { rankFromLevel, tierFromLevel } from "@/lib/xp";
+
+const ACCENT = "#c8e64a";
 
 export const revalidate = 300; // ISR: regenerate every 5 min
 
 export const metadata: Metadata = {
   title: "Leaderboard - TG City",
   description:
-    "Top GitHub developers ranked by contributions, stars, repos, achievements, and referrals in TG City.",
+    "Top Telegram channels in Ethiopia ranked by subscribers and engagement in TG City.",
 };
 
-interface Developer {
-  github_login: string;
+interface Channel {
+  handle: string;
   name: string | null;
   avatar_url: string | null;
-  contributions: number;
-  contributions_total: number | null;
-  total_stars: number;
-  public_repos: number;
-  primary_language: string | null;
+  subCount: number;
+  avgViews: number;
+  totalPosts: number;
+  category: string | null;
   rank: number | null;
-  referral_count: number;
-  kudos_count: number;
-  created_at?: string;
-  xp_total?: number;
-  xp_level?: number;
 }
 
-type TabId = "contributors" | "stars" | "architects" | "achievers" | "recruiters" | "xp";
+type TabId = "channels" | "categories";
 
-const TABS: { id: TabId; label: string; metric: string }[] = [
-  { id: "contributors", label: "Contributors", metric: "contributions" },
-  { id: "stars", label: "Stars", metric: "total_stars" },
-  { id: "architects", label: "Architects", metric: "public_repos" },
-  { id: "achievers", label: "Achievers", metric: "achievements" },
-  { id: "recruiters", label: "Recruiters", metric: "referral_count" },
-  { id: "xp", label: "XP", metric: "xp_total" },
+const TABS: { id: TabId; label: string }[] = [
+  { id: "channels", label: "Channels" },
+  { id: "categories", label: "Categories" },
 ];
-
-const ACCENT = "#c8e64a";
 
 function rankColor(rank: number): string {
   if (rank === 1) return "#ffd700";
@@ -56,131 +37,63 @@ function rankColor(rank: number): string {
   return ACCENT;
 }
 
+function formatNumber(num: number): string {
+  if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + "M";
+  if (num >= 1_000) return (num / 1_000).toFixed(1) + "K";
+  return num.toLocaleString();
+}
+
 export default async function LeaderboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; mode?: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
   const params = await searchParams;
-  const mode = params.mode ?? "developers";
-  const activeTab = (params.tab ?? "contributors") as TabId;
+  const activeTab = (params.tab ?? "channels") as TabId;
 
-  const supabase = getSupabaseAdmin();
-
-  // Fetch devs sorted by the active metric
-  // Contributors uses rank (based on contributions_total) for consistency
-  const orderColumn = activeTab === "contributors" ? "rank"
-    : activeTab === "stars" ? "total_stars"
-    : activeTab === "architects" ? "public_repos"
-    : activeTab === "recruiters" ? "referral_count"
-    : activeTab === "xp" ? "xp_total"
-    : "contributions"; // achievers handled separately
-  const orderAscending = activeTab === "contributors"; // rank is ascending (1 = best)
-
-  let devs: Developer[] = [];
-  let achieverCounts: Record<string, number> = {};
-
-  if (activeTab === "achievers") {
-    // DB-side aggregation: get top 50 devs by achievement count
-    const { data: topAchievers } = await supabase
-      .rpc("top_achievers", { lim: 50 });
-
-    const achieverIds = (topAchievers ?? []).map((a: { developer_id: number }) => a.developer_id);
-    const achCountMap: Record<number, number> = {};
-    for (const a of topAchievers ?? []) {
-      achCountMap[a.developer_id] = a.ach_count;
+  // Fetch channels from the API
+  let channels: Channel[] = [];
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/city?from=0&to=100`, {
+      next: { revalidate: 300 },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      channels = (data.developers ?? []).map((d: Record<string, unknown>) => ({
+        handle: d.handle ?? d.github_login ?? "",
+        name: d.name ?? null,
+        avatar_url: d.avatar_url ?? null,
+        subCount: d.subCount ?? d.contributions ?? 0,
+        avgViews: d.avgViews ?? d.total_stars ?? 0,
+        totalPosts: d.totalPosts ?? d.public_repos ?? 0,
+        category: d.category ?? d.primary_language ?? null,
+        rank: d.rank ?? null,
+      })).filter((c: Channel) => c.handle) as Channel[];
     }
-
-    // Fetch dev details only for the top achievers
-    const { data: achieverDevs } = achieverIds.length > 0
-      ? await supabase
-        .from("developers")
-        .select("id, github_login, name, avatar_url, contributions, contributions_total, total_stars, public_repos, primary_language, rank, referral_count, kudos_count, created_at, xp_total, xp_level")
-        .in("id", achieverIds)
-      : { data: [] };
-
-    // Sort by achievement count (preserving DB order)
-    const sorted = (achieverDevs ?? [])
-      .map((d) => ({ ...d, ach_count: achCountMap[d.id] ?? 0 }))
-      .sort((a, b) => b.ach_count - a.ach_count || new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-
-    devs = sorted as unknown as Developer[];
-    for (const d of sorted) {
-      achieverCounts[d.github_login] = d.ach_count;
-    }
-  } else {
-    const { data } = await supabase
-      .from("developers")
-      .select("github_login, name, avatar_url, contributions, contributions_total, total_stars, public_repos, primary_language, rank, referral_count, kudos_count, created_at, xp_total, xp_level")
-      .order(orderColumn, { ascending: orderAscending, nullsFirst: false })
-      .order("created_at", { ascending: true })
-      .limit(50);
-    devs = (data ?? []) as Developer[];
+  } catch {
+    // Fallback to empty array if fetch fails
+    channels = [];
   }
 
-  // Check if recruiters tab should be hidden (no referral data)
-  const hasRecruiters = activeTab === "recruiters"
-    ? devs.some((d) => (d.referral_count ?? 0) > 0)
-    : true;
+  // Sort by subscriber count descending
+  channels.sort((a, b) => b.subCount - a.subCount);
 
-  const topLogins = devs.map((d) => d.github_login.toLowerCase());
-
-  function getMetricValue(dev: Developer): string {
-    switch (activeTab) {
-      case "contributors": return ((dev.contributions_total && dev.contributions_total > 0) ? dev.contributions_total : dev.contributions).toLocaleString();
-      case "stars": return dev.total_stars.toLocaleString();
-      case "architects": return dev.public_repos.toLocaleString();
-      case "achievers": return String(achieverCounts[dev.github_login] ?? 0);
-      case "recruiters": return (dev.referral_count ?? 0).toLocaleString();
-      case "xp": return (dev.xp_total ?? 0).toLocaleString();
-      default: return "";
-    }
+  // Group by category for the Categories tab
+  const categoryMap = new Map<string, { totalSubs: number; count: number }>();
+  for (const ch of channels) {
+    const cat = ch.category ?? "General";
+    const existing = categoryMap.get(cat) ?? { totalSubs: 0, count: 0 };
+    existing.totalSubs += ch.subCount;
+    existing.count += 1;
+    categoryMap.set(cat, existing);
   }
 
-  function getXpBadge(dev: Developer): { title: string; color: string } | null {
-    if (activeTab !== "xp" || !dev.xp_level) return null;
-    const rank = rankFromLevel(dev.xp_level);
-    const tier = tierFromLevel(dev.xp_level);
-    return { title: `Lv${dev.xp_level} ${rank.title}`, color: tier.color };
-  }
-
-  const metricLabel = activeTab === "contributors" ? "Contributions"
-    : activeTab === "stars" ? "Stars"
-    : activeTab === "architects" ? "Repos"
-    : activeTab === "achievers" ? "Achievements"
-    : activeTab === "xp" ? "XP"
-    : "Referrals";
-
-  // A4: Raw metric values for "You vs. Next" component
-  function getMetricValueRaw(dev: Developer): number {
-    switch (activeTab) {
-      case "contributors": return (dev.contributions_total && dev.contributions_total > 0) ? dev.contributions_total : dev.contributions;
-      case "stars": return dev.total_stars;
-      case "architects": return dev.public_repos;
-      case "achievers": return achieverCounts[dev.github_login] ?? 0;
-      case "recruiters": return dev.referral_count ?? 0;
-      case "xp": return dev.xp_total ?? 0;
-      default: return 0;
-    }
-  }
-
-  const devMetrics = devs.map((d) => ({
-    login: d.github_login.toLowerCase(),
-    value: getMetricValueRaw(d),
-  }));
-
-  // A6: "NEW" detection — devs created in last 7 days
-  const sevenDaysAgo = Date.now() - 7 * 86400000;
-  const newLogins = new Set(
-    devs
-      .filter((d) => d.created_at && new Date(d.created_at).getTime() > sevenDaysAgo)
-      .map((d) => d.github_login.toLowerCase())
-  );
+  const sortedCategories = Array.from(categoryMap.entries())
+    .map(([name, data]) => ({ name, ...data }))
+    .sort((a, b) => b.totalSubs - a.totalSubs);
 
   return (
-    <LeaderboardAuthProvider>
     <main className="min-h-screen bg-bg font-pixel uppercase text-warm">
-      <LeaderboardTracker tab={activeTab} />
       <div className="mx-auto max-w-3xl px-4 py-10">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -197,175 +110,139 @@ export default async function LeaderboardPage({
             Leader<span style={{ color: ACCENT }}>board</span>
           </h1>
           <p className="mt-3 text-xs text-muted normal-case">
-            Top developers ranked in TG City
+            Top Telegram channels in Ethiopia
           </p>
         </div>
 
-        {/* Mode toggle: Developers | Game */}
-        <div className="mt-6 flex justify-center">
-          <div className="flex border-2 border-border">
+        {/* Tabs */}
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          {TABS.map((tab) => (
             <Link
-              href="/leaderboard?mode=developers"
-              className="px-5 py-2 text-[11px] transition-colors"
+              key={tab.id}
+              href={`/leaderboard?tab=${tab.id}`}
+              className="px-5 py-2 text-[11px] transition-colors border-2"
               style={{
-                color: mode === "developers" ? ACCENT : "var(--color-muted)",
-                backgroundColor: mode === "developers" ? "rgba(200, 230, 74, 0.1)" : "transparent",
+                borderColor: activeTab === tab.id ? ACCENT : "var(--color-border)",
+                color: activeTab === tab.id ? ACCENT : "var(--color-muted)",
+                backgroundColor: activeTab === tab.id ? "rgba(200, 230, 74, 0.1)" : "transparent",
               }}
             >
-              Developers
+              {tab.label}
             </Link>
-            <Link
-              href="/leaderboard?mode=game"
-              className="relative border-l-2 border-border px-5 py-2 text-[11px] transition-colors"
-              style={{
-                color: mode === "game" ? ACCENT : "var(--color-muted)",
-                backgroundColor: mode === "game" ? "rgba(200, 230, 74, 0.1)" : "transparent",
-              }}
-            >
-              Game
-            </Link>
-            <Link
-              href="/leaderboard?mode=dailies"
-              className="relative border-l-2 border-border px-5 py-2 text-[11px] transition-colors"
-              style={{
-                color: mode === "dailies" ? ACCENT : "var(--color-muted)",
-                backgroundColor: mode === "dailies" ? "rgba(200, 230, 74, 0.1)" : "transparent",
-              }}
-            >
-              Dailies
-            </Link>
-          </div>
+          ))}
         </div>
 
-        {mode === "dailies" ? (
-          <Suspense
-            fallback={
-              <div className="mt-10 text-center text-xs text-muted normal-case">
-                Loading dailies leaderboard...
-              </div>
-            }
-          >
-            <DailiesLeaderboard />
-          </Suspense>
-        ) : mode === "developers" ? (
-          <>
-            {/* Tabs */}
-            <div className="mt-6 flex flex-wrap justify-center gap-1">
-              {TABS.filter((t) => t.id !== "recruiters" || hasRecruiters).map((tab) => (
+        {/* Table */}
+        <div className="mt-6 border-[3px] border-border">
+          {/* Header row */}
+          <div className="flex items-center gap-4 border-b-[3px] border-border bg-bg-card px-5 py-3 text-xs text-muted">
+            <span className="w-10 text-center">#</span>
+            {activeTab === "channels" ? (
+              <>
+                <span className="flex-1">Channel</span>
+                <span className="hidden w-24 text-right sm:block">Category</span>
+                <span className="w-28 text-right">Subscribers</span>
+              </>
+            ) : (
+              <>
+                <span className="flex-1">Category</span>
+                <span className="hidden w-24 text-right sm:block">Channels</span>
+                <span className="w-28 text-right">Total Subs</span>
+              </>
+            )}
+          </div>
+
+          {/* Rows */}
+          {activeTab === "channels" ? (
+            channels.map((ch, i) => {
+              const pos = i + 1;
+              return (
                 <Link
-                  key={tab.id}
-                  href={`/leaderboard?tab=${tab.id}`}
-                  className="px-3 py-1.5 text-[10px] transition-colors border-2"
-                  style={{
-                    borderColor: activeTab === tab.id ? ACCENT : "var(--color-border)",
-                    color: activeTab === tab.id ? ACCENT : "var(--color-muted)",
-                    backgroundColor: activeTab === tab.id ? "rgba(200, 230, 74, 0.1)" : "transparent",
-                  }}
+                  key={ch.handle}
+                  href={`/?user=${ch.handle}`}
+                  className="flex items-center gap-4 border-b border-border/50 px-5 py-3.5 transition-colors hover:bg-bg-card"
                 >
-                  {tab.label}
-                </Link>
-              ))}
-            </div>
-
-            {/* A4: "You vs. Next" banner */}
-            <LeaderboardYouVsNext metrics={devMetrics} metricLabel={metricLabel} />
-
-            {/* Table */}
-            <div className="mt-6 border-[3px] border-border">
-              {/* Header row */}
-              <div className="flex items-center gap-4 border-b-[3px] border-border bg-bg-card px-5 py-3 text-xs text-muted">
-                <span className="w-10 text-center">#</span>
-                <span className="flex-1">Developer</span>
-                <span className="hidden w-24 text-right sm:block">{activeTab === "xp" ? "Rank" : "Language"}</span>
-                <span className="w-28 text-right">{metricLabel}</span>
-              </div>
-
-              {/* Rows */}
-              {devs.map((dev, i) => {
-                const pos = i + 1;
-                return (
-                  <Link
-                    key={dev.github_login}
-                    href={`/dev/${dev.github_login}`}
-                    className="flex items-center gap-4 border-b border-border/50 px-5 py-3.5 transition-colors hover:bg-bg-card"
-                  >
-                    <span className="w-10 text-center">
-                      <span
-                        className="text-sm font-bold"
-                        style={{ color: rankColor(pos) }}
-                      >
-                        {pos}
-                      </span>
-                      {newLogins.has(dev.github_login.toLowerCase()) && (
-                        <span className="block text-[7px] font-bold" style={{ color: "#ffd700" }}>
-                          NEW
-                        </span>
-                      )}
+                  <span className="w-10 text-center">
+                    <span
+                      className="text-sm font-bold"
+                      style={{ color: rankColor(pos) }}
+                    >
+                      {pos}
                     </span>
+                  </span>
 
-                    <div className="flex flex-1 items-center gap-3 overflow-hidden">
-                      {dev.avatar_url && (
-                        <Image
-                          src={dev.avatar_url}
-                          alt={dev.github_login}
-                          width={36}
-                          height={36}
-                          className="border-2 border-border"
-                          style={{ imageRendering: "pixelated" }}
-                        />
-                      )}
-                      <div className="overflow-hidden">
-                        <p className="truncate text-sm text-cream">
-                          {dev.name ?? dev.github_login}
-                          <LeaderboardYouBadge login={dev.github_login} />
+                  <div className="flex flex-1 items-center gap-3 overflow-hidden">
+                    {ch.avatar_url && (
+                      <Image
+                        src={ch.avatar_url}
+                        alt={ch.handle}
+                        width={36}
+                        height={36}
+                        className="border-2 border-border"
+                        style={{ imageRendering: "pixelated" }}
+                      />
+                    )}
+                    <div className="overflow-hidden">
+                      <p className="truncate text-sm text-cream">
+                        {ch.name ?? ch.handle}
+                      </p>
+                      {ch.name && (
+                        <p className="truncate text-[10px] text-muted">
+                          @{ch.handle}
                         </p>
-                        {dev.name && (
-                          <p className="truncate text-[10px] text-muted">
-                            @{dev.github_login}
-                          </p>
-                        )}
-                      </div>
+                      )}
                     </div>
+                  </div>
 
-                    <span className="hidden w-24 text-right text-xs text-muted sm:block">
-                      {activeTab === "xp"
-                        ? (() => {
-                            const badge = getXpBadge(dev);
-                            return badge ? (
-                              <span style={{ color: badge.color }}>{badge.title}</span>
-                            ) : "\u2014";
-                          })()
-                        : (dev.primary_language ?? "\u2014")}
+                  <span className="hidden w-24 text-right text-xs text-muted sm:block">
+                    {ch.category ?? "—"}
+                  </span>
+
+                  <span className="w-28 text-right text-sm" style={{ color: ACCENT }}>
+                    {formatNumber(ch.subCount)}
+                  </span>
+                </Link>
+              );
+            })
+          ) : (
+            sortedCategories.map((cat, i) => {
+              const pos = i + 1;
+              return (
+                <div
+                  key={cat.name}
+                  className="flex items-center gap-4 border-b border-border/50 px-5 py-3.5"
+                >
+                  <span className="w-10 text-center">
+                    <span
+                      className="text-sm font-bold"
+                      style={{ color: rankColor(pos) }}
+                    >
+                      {pos}
                     </span>
+                  </span>
 
-                    <span className="w-28 text-right text-sm" style={{ color: activeTab === "xp" ? tierFromLevel(dev.xp_level ?? 1).color : ACCENT }}>
-                      {getMetricValue(dev)}
-                    </span>
-                  </Link>
-                );
-              })}
+                  <span className="flex-1 truncate text-sm text-cream">
+                    {cat.name}
+                  </span>
 
-              {/* "YOU" row if not in top 50 — handled client-side */}
-              <LeaderboardUserPosition tab={activeTab} topLogins={topLogins} />
+                  <span className="hidden w-24 text-right text-xs text-muted sm:block">
+                    {cat.count}
+                  </span>
 
-              {devs.length === 0 && (
-                <div className="px-5 py-8 text-center text-xs text-muted normal-case">
-                  No data for this category yet.
+                  <span className="w-28 text-right text-sm" style={{ color: ACCENT }}>
+                    {formatNumber(cat.totalSubs)}
+                  </span>
                 </div>
-              )}
+              );
+            })
+          )}
+
+          {(activeTab === "channels" ? channels : sortedCategories).length === 0 && (
+            <div className="px-5 py-8 text-center text-xs text-muted normal-case">
+              No data available. Please try again later.
             </div>
-          </>
-        ) : (
-          <Suspense
-            fallback={
-              <div className="mt-10 text-center text-xs text-muted normal-case">
-                Loading daily scores...
-              </div>
-            }
-          >
-            <FlyLeaderboard />
-          </Suspense>
-        )}
+          )}
+        </div>
 
         {/* Footer */}
         <div className="mt-8 text-center">
@@ -379,22 +256,8 @@ export default async function LeaderboardPage({
           >
             Enter the City
           </Link>
-
-          <p className="mt-6 text-[9px] text-muted normal-case">
-            built by{" "}
-            <a
-              href="https://x.com/samuelrizzondev"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="transition-colors hover:text-cream"
-              style={{ color: ACCENT }}
-            >
-              @samuelrizzondev
-            </a>
-          </p>
         </div>
       </div>
     </main>
-    </LeaderboardAuthProvider>
   );
 }

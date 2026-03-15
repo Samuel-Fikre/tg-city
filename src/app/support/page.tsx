@@ -64,10 +64,6 @@ function SupportContent() {
         <h1 className="text-2xl text-cream sm:text-3xl">
           Keep the <span style={{ color: ACCENT }}>Signal</span> Alive
         </h1>
-        <p className="mt-2 text-xs text-muted normal-case sm:text-sm">
-          50,000 buildings. 2 million views. Zero ads. Built by one dev, on nights and weekends.
-          Here&apos;s how you can help keep this city growing.
-        </p>
 
         {/* Thank you banner */}
         {thanks && (
@@ -129,12 +125,12 @@ function SupportContent() {
               A star helps more developers discover TG City. Takes one click.
             </p>
             <a
-              href="https://github.com/srizzon/git-city"
+              href="https://github.com/srizzon/tg-city"
               target="_blank"
               rel="noopener noreferrer"
               className="btn-press mt-4 inline-block border-2 border-border px-5 py-2 text-xs text-muted transition-colors hover:border-border-light hover:text-cream"
             >
-              github.com/srizzon/git-city
+              github.com/srizzon/tg-city
             </a>
           </div>
 

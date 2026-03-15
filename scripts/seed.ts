@@ -51,7 +51,7 @@ const TOP_DEVS = [
 const ghHeaders = {
   Accept: "application/vnd.github.v3+json",
   Authorization: `Bearer ${GITHUB_TOKEN}`,
-  "User-Agent": "git-city-seed",
+  "User-Agent": "tg-city-seed",
 };
 
 interface ExpandedGitHubData {

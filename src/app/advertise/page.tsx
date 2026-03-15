@@ -352,18 +352,6 @@ export default async function AdvertisePage() {
                 samuelrizzondev@gmail.com
               </a>
             </p>
-            <p className="mt-4 text-xs text-muted normal-case">
-              built by{" "}
-              <a
-                href="https://x.com/samuelrizzondev"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="transition-colors hover:text-cream"
-                style={{ color: ACCENT }}
-              >
-                @samuelrizzondev
-              </a>
-            </p>
           </div>
         </div>
       </div>

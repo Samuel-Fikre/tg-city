@@ -9,7 +9,7 @@ export const FETCH_TIMEOUT_MS = 15_000;
 export function ghHeaders(): HeadersInit {
   const h: HeadersInit = {
     Accept: "application/vnd.github.v3+json",
-    "User-Agent": "git-city-app",
+    "User-Agent": "tg-city-app",
   };
   if (process.env.GITHUB_TOKEN) {
     h.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;

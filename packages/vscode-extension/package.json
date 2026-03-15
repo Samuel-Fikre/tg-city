@@ -3,15 +3,15 @@
   "displayName": "TG City: Pulse",
   "description": "Keep your city alive. When you code, your building glows and powers the signal. Privacy-first: you control what gets shared.",
   "version": "0.3.0",
-  "publisher": "git-city",
+  "publisher": "tg-city",
   "license": "AGPL-3.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/srizzon/git-city"
+    "url": "https://github.com/srizzon/tg-city"
   },
   "homepage": "https://www.thegitcity.com",
   "bugs": {
-    "url": "https://github.com/srizzon/git-city/issues"
+    "url": "https://github.com/srizzon/tg-city/issues"
   },
   "engines": {
     "vscode": "^1.93.0"

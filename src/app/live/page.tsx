@@ -128,7 +128,7 @@ export default function LivePage() {
             Every dev who codes keeps a building lit. Install Pulse to power yours.
           </p>
           <a
-            href="https://marketplace.visualstudio.com/items?itemName=git-city.gitcity"
+            href="https://marketplace.visualstudio.com/items?itemName=tg-city.gitcity"
             target="_blank"
             rel="noopener noreferrer"
             className="btn-press inline-block px-8 py-3 text-xs text-bg"

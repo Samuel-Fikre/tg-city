@@ -276,18 +276,6 @@ export default async function ShopPage({ params, searchParams }: Props) {
 
         {/* Creator credit */}
         <div className="mt-10 border-t border-border/50 pt-4 text-center">
-          <p className="text-[9px] text-muted normal-case">
-            built by{" "}
-            <a
-              href="https://x.com/samuelrizzondev"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="transition-colors hover:text-cream"
-              style={{ color: ACCENT }}
-            >
-              @samuelrizzondev
-            </a>
-          </p>
         </div>
       </div>
     </main>
