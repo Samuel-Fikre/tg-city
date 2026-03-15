@@ -202,59 +202,52 @@ function isV2Dev(dev: ChannelRecord): boolean {
 function calcHeightV2(
   dev: ChannelRecord,
   maxContribV2: number,
-  maxStars: number,
 ): { height: number; composite: number } {
-  // Use Telegram subCount as the primary metric (mapped to contributions)
+  // Height is determined ONLY by subscriber count (subscribers = height)
   const contribs = dev.subCount ?? dev.contributions ?? 0;
 
-  // Use Telegram avgViews as the secondary metric (mapped to total_stars)
+  // Use logarithmic scaling for better visual differentiation at all scales
+  // This ensures 100k vs 1M subscribers has visible height difference
+  const minSubs = 100;
+  const maxSubsCap = Math.max(maxContribV2, 5_000_000); // Allow scaling up to 5M+
+  const logMin = Math.log10(minSubs);
+  const logMax = Math.log10(Math.max(maxSubsCap, contribs, minSubs * 10));
+  const logContribs = Math.log10(Math.max(contribs, minSubs));
+
+  // Normalize to 0-1 range based on log scale
+  const normalizedHeight = (logContribs - logMin) / (logMax - logMin);
+  const clampedNorm = Math.max(0, Math.min(1, normalizedHeight));
+
+  // Height uses pure subscriber-based scaling
+  const height = Math.min(MAX_BUILDING_HEIGHT, MIN_BUILDING_HEIGHT + clampedNorm * HEIGHT_RANGE);
+
+  // Return composite for ranking purposes (still factors in other metrics)
   const avgViews = dev.avgViews ?? dev.total_stars ?? 0;
+  const sScore = Math.min(1, avgViews / 1_000_000) * 0.3; // views factor into composite only
+  const composite = clampedNorm * 0.7 + sScore;
 
-  const cNorm = contribs / Math.max(1, Math.min(maxContribV2, 50_000));
-  const sNorm = avgViews / Math.max(1, Math.min(maxStars, 200_000));
-
-  // Consistency: for Telegram, we can use posts as a consistency indicator
-  const posts = dev.totalPosts ?? dev.public_repos ?? 0;
-  const consistencyRaw = Math.min(1, posts / Math.max(1, contribs / 10));
-  const consistencyNorm = Math.min(1, consistencyRaw);
-
-  const prNorm = ((dev.total_prs ?? 0) + (dev.total_reviews ?? 0)) / 5_000;
-  const extNorm = (dev.repos_contributed_to ?? 0) / 100;
-  const fNorm = Math.log10(Math.max(1, dev.followers ?? 0)) / Math.log10(50_000);
-
-  const cScore = Math.pow(Math.min(cNorm, 3), 0.55);
-  const sScore = Math.pow(Math.min(sNorm, 3), 0.45);
-  const prScore = Math.pow(Math.min(prNorm, 2), 0.5);
-  const extScore = Math.pow(Math.min(extNorm, 2), 0.5);
-  const fScore = Math.pow(Math.min(fNorm, 2), 0.5);
-  const cnsScore = Math.pow(consistencyNorm, 0.6);
-
-  const composite =
-    cScore  * 0.35 +
-    sScore  * 0.20 +
-    prScore * 0.15 +
-    extScore * 0.10 +
-    cnsScore * 0.10 +
-    fScore  * 0.10;
-
-  const height = Math.min(MAX_BUILDING_HEIGHT, MIN_BUILDING_HEIGHT + composite * HEIGHT_RANGE);
   return { height, composite };
 }
 
 function calcWidthV2(dev: ChannelRecord): number {
-  // Use Telegram totalPosts for building width (mapped from public_repos)
-  const posts = dev.totalPosts ?? dev.public_repos ?? 0;
-  const repoNorm = Math.min(1, posts / 200);
-  const langNorm = Math.min(1, (dev.language_diversity ?? 1) / 10);
-  const topStarNorm = Math.min(1, (dev.top_repos?.[0]?.stars ?? 0) / 50_000);
+  // Width/Girth is determined by Average Views (density of engagement)
+  // High avg views = wider building (dense/thick)
+  // Low avg views = narrower building (slim)
+  const avgViews = dev.avgViews ?? dev.total_stars ?? 0;
 
-  const score =
-    Math.pow(repoNorm, 0.5) * 0.50 +
-    Math.pow(langNorm, 0.6) * 0.30 +
-    Math.pow(topStarNorm, 0.4) * 0.20;
+  // Logarithmic scale for views: 100 views -> narrow, 500k views -> max width
+  const minViews = 50;
+  const maxViews = 500_000;
+  const logMin = Math.log10(minViews);
+  const logMax = Math.log10(maxViews);
+  const logViews = Math.log10(Math.max(avgViews, minViews));
 
+  // Normalize to 0-1
+  const viewsNorm = Math.max(0, Math.min(1, (logViews - logMin) / (logMax - logMin)));
+
+  // Width ranges from 14 (narrow) to 38 (wide)
   const jitter = (seededRandom(hashStr(dev.handle)) - 0.5) * 4;
-  return Math.round(14 + score * 24 + jitter);
+  return Math.round(14 + viewsNorm * 24 + jitter);
 }
 
 function calcDepthV2(dev: ChannelRecord): number {
@@ -329,7 +322,7 @@ function precomputeComposites(
   const map = new Map<string, number>();
   for (const dev of devs) {
     const { composite } = isV2Dev(dev)
-      ? calcHeightV2(dev, maxContribV2, maxStars)
+      ? calcHeightV2(dev, maxContribV2)
       : calcHeight(dev.subCount ?? dev.contributions ?? 0, dev.avgViews ?? dev.total_stars ?? 0, dev.totalPosts ?? dev.public_repos ?? 0, maxContrib, maxStars);
     map.set(dev.handle, composite);
   }
@@ -515,7 +508,7 @@ export function generateCityLayout(devs: ChannelRecord[]): {
       let height: number, composite: number, w: number, d: number, litPercentage: number;
 
       if (isV2Dev(dev)) {
-        ({ height, composite } = calcHeightV2(dev, maxContribV2, maxStars));
+        ({ height, composite } = calcHeightV2(dev, maxContribV2));
         w = calcWidthV2(dev);
         d = calcDepthV2(dev);
         litPercentage = calcLitPercentageV2(dev);
@@ -836,7 +829,7 @@ export function calcBuildingDims(
       fetch_priority: 0, claimed_at: null,
       ...v2Data,
     };
-    const { height } = calcHeightV2(dev, maxContrib, maxStars);
+    const { height } = calcHeightV2(dev, maxContrib);
     return { width: calcWidthV2(dev), height, depth: calcDepthV2(dev) };
   }
 
